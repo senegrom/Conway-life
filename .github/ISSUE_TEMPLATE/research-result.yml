@@ -1,0 +1,45 @@
+name: Research result
+description: Record a computational, theoretical, pattern or performance result
+title: "[RESULT] "
+labels: ["result", "needs-verification"]
+body:
+  - type: dropdown
+    id: evidence
+    attributes:
+      label: Evidence type
+      options:
+        - theorem/proof
+        - exhaustive computation
+        - candidate pattern
+        - independent reproduction
+        - benchmark
+        - heuristic
+    validations:
+      required: true
+  - type: textarea
+    id: claim
+    attributes:
+      label: Exact claim
+      description: State only what the evidence establishes.
+    validations:
+      required: true
+  - type: textarea
+    id: artefacts
+    attributes:
+      label: Artefacts and hashes
+      description: Files, commits, commands, logs and SHA-256 values.
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Independent verification
+      description: Checker, second engine, proof replay or reviewer.
+    validations:
+      required: true
+  - type: textarea
+    id: limitations
+    attributes:
+      label: Limitations
+    validations:
+      required: true

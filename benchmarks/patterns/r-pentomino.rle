@@ -1,0 +1,4 @@
+#N R-pentomino
+#C Classic five-cell methuselah.
+x = 3, y = 3, rule = B3/S23
+b2o$2ob$bo!

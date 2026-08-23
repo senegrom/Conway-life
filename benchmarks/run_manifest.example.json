@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "suite_id": "initial-local-suite",
+  "created_utc": "2026-08-23T00:00:00Z",
+  "hardware_id": "replace-me",
+  "engines": [
+    {
+      "engine_id": "GOLLY-HASHLIFE",
+      "source": "https://sourceforge.net/projects/golly/",
+      "version": "5.0",
+      "commit": null,
+      "build": "official binary or documented source build"
+    }
+  ],
+  "workloads": [
+    {
+      "workload_id": "sanity-glider",
+      "input_path": "benchmarks/patterns/glider.rle",
+      "input_sha256": "replace-after-file-is-pinned",
+      "topology": "unbounded",
+      "generations": 1024
+    }
+  ],
+  "policy": {
+    "warmup_runs": 1,
+    "timed_repetitions": 5,
+    "randomize_order": true,
+    "record_cold_and_warm": true,
+    "verify_output": true
+  }
+}

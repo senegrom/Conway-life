@@ -1,0 +1,39 @@
+name: Open problem
+description: Register or re-audit a Conway Life question
+title: "[OPEN] "
+labels: ["open-problem", "status-check"]
+body:
+  - type: textarea
+    id: statement
+    attributes:
+      label: Exact statement
+      description: Include definitions and quantifiers.
+    validations:
+      required: true
+  - type: input
+    id: primary_source
+    attributes:
+      label: Primary source
+      placeholder: DOI, paper, author page or canonical status page
+    validations:
+      required: true
+  - type: input
+    id: checked
+    attributes:
+      label: Last checked
+      placeholder: YYYY-MM-DD
+    validations:
+      required: true
+  - type: textarea
+    id: audit
+    attributes:
+      label: Status audit
+      description: Recent papers, forum searches, wiki history and author contact.
+    validations:
+      required: true
+  - type: textarea
+    id: plan
+    attributes:
+      label: Proposed attack and verification
+    validations:
+      required: true

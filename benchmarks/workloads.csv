@@ -1,0 +1,11 @@
+workload_id,family,input,topology,size_or_width,generation_target,correctness_check,notes
+sanity-block,sanity,benchmarks/patterns/block.rle,unbounded,2x2,1,exact coordinates,Reference fixed point
+sanity-blinker,sanity,benchmarks/patterns/blinker.rle,unbounded,3x1,2,exact coordinates,Reference period-2
+sanity-glider,sanity,benchmarks/patterns/glider.rle,unbounded,3x3,4,exact coordinates,"Reference displacement (1,1) per four generations"
+dense-4096-d10-s1,dense,generated bit grid,torus,4096x4096,10000,full-grid SHA-256,Density 0.10; seed to be pinned
+dense-4096-d50-s1,dense,generated bit grid,torus,4096x4096,10000,full-grid SHA-256,Density 0.50; seed to be pinned
+dense-16384-d50-s1,dense,generated bit grid,torus,16384x16384,1000,full-grid SHA-256,Stress GPU and memory
+sparse-rpentomino,sparse-expanding,benchmarks/patterns/r-pentomino.rle,unbounded,,50000,coordinate digest and population,Checkpoint set required
+long-0e0p,long-compressible,external 0e0p-metaglider.mc.gz,unbounded,,2^14 and 2^27,macrocell digest and population,Reproduce gol_engines claims
+stream-synthetic-001,stream,generated antiparallel tapes,unbounded,,2^18,coordinate/macrocell digest,Controlled lane spacing
+soup-c1-16-batch,soup,generated C1 soups,finite seeds/unbounded evolution,16x16,fixed batch count,haul digest,Upload disabled during benchmark

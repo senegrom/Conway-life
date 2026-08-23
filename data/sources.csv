@@ -1,0 +1,37 @@
+source_id,title,url,source_type,key_use,last_checked
+SRC-001,Golly home,https://golly.sourceforge.io/,official project,"Golly is open source, cross-platform and includes HashLife; Golly 5.0 announced October 2025",2026-08-23
+SRC-002,Golly HashLife help,https://golly.sourceforge.io/Help/Algorithms/HashLife.html,official documentation,HashLife excels on repeated structure and performs poorly on highly chaotic patterns,2026-08-23
+SRC-003,Golly QuickLife help,https://golly.sourceforge.io/Help/Algorithms/QuickLife.html,official documentation,QuickLife is a fast conventional non-hashing Life-like CA algorithm,2026-08-23
+SRC-004,Golly 5.0 release files,https://sourceforge.net/projects/golly/files/golly/golly-5.0/,official release,Golly 5.0 files dated 2025-10-26,2026-08-23
+SRC-005,Golly SourceForge project,https://sourceforge.net/projects/golly/,official project,Project showed an update dated 2026-08-04 when checked,2026-08-23
+SRC-006,lifelib repository,https://gitlab.com/apgoucher/lifelib,official source,Fast C++ library for cellular-automaton simulation and manipulation,2026-08-23
+SRC-007,lifelib LifeWiki,https://conwaylife.com/wiki/Lifelib,community technical documentation,"Describes HashLife, tile-based structures, StreamLife and performance characteristics",2026-08-23
+SRC-008,StreamLife LifeWiki,https://conwaylife.com/wiki/StreamLife,community technical documentation,Specialised for antiparallel streams; can be orders faster on suitable patterns,2026-08-23
+SRC-009,gol_engines,https://github.com/das67333/gol_engines,source and self-benchmark,Parallel Rust HashLife/StreamLife and 0E0P benchmark,2026-08-23
+SRC-010,Binary Banter source,https://github.com/binary-banter/fast-game-of-life,source,Dense Rust/SIMD/OpenCL/CUDA Life implementations,2026-08-23
+SRC-011,Binary Banter benchmark article,https://binary-banter.github.io/game-of-life/,author benchmark,Reports dense CPU/GPU CUPS and implementation techniques,2026-08-23
+SRC-012,CAT paper,https://arxiv.org/abs/2406.17284,peer-reviewed paper/preprint,"Tensor-core CA; packet coding wins low-radius comparison, CAT wins larger radii",2026-08-23
+SRC-013,CAT source,https://github.com/temporal-hpc/CAT,source,CUDA implementation with PACK and tensor-core solvers,2026-08-23
+SRC-014,CAX paper,https://arxiv.org/abs/2410.02651,peer-reviewed paper/preprint,JAX-accelerated general cellular-automata library,2026-08-23
+SRC-015,apgsearch,https://conwaylife.com/wiki/Apgsearch,community technical documentation,"Soup search, Catagolue upload/verification and CUDA support",2026-08-23
+SRC-016,Catagolue,https://catagolue.hatsya.com/,community database,Distributed object census database,2026-08-23
+SRC-017,Ville Salo open problems,https://villesalo.com/openproblems.html,author-maintained problem list,Seven precise current Game of Life questions,2026-08-23
+SRC-018,Structure and computability of preimages in the Game of Life,https://doi.org/10.1016/j.tcs.2025.115237,primary paper,"2025 complexity, universality and preimage results plus open questions",2026-08-23
+SRC-019,Preimages paper on arXiv,https://arxiv.org/abs/2308.10198,primary preprint,Accessible version of the preimage paper,2026-08-23
+SRC-020,Gardens of Eden in the Game of Life,https://arxiv.org/abs/1912.00692,primary preprint,Padding theorem and predecessor questions,2026-08-23
+SRC-021,What Can Oracles Teach Us About the Ultimate Fate of Life?,https://doi.org/10.4230/LIPIcs.ICALP.2022.131,primary paper,Solves the generalised grandfather problem and one unique-father interpretation,2026-08-23
+SRC-022,Garden of Eden LifeWiki,https://conwaylife.com/wiki/Garden_of_Eden,community status,Four-row live-cell Garden-of-Eden question,2026-08-23
+SRC-023,Spaceship Search Status Page,https://conwaylife.com/wiki/LifeWiki:Spaceship_Search_Status_Page,community status,"Known minima, proofs and completed censuses",2026-08-23
+SRC-024,ikpx2 tutorial,https://conwaylife.com/wiki/Tutorials/ikpx2,community tutorial,Current workflow and example unknown speeds,2026-08-23
+SRC-025,LSSS tutorial,https://conwaylife.com/wiki/Tutorials/LSSS,community tutorial,Fast orthogonal spaceship search; WSL and disk guidance,2026-08-23
+SRC-026,LLSSS tutorial,https://conwaylife.com/wiki/Tutorials/LLSSS,community tutorial,Rust slice search and bounded-disproof modes,2026-08-23
+SRC-027,CatForce,https://conwaylife.com/wiki/CatForce,community technical documentation,Oscillator and conduit search,2026-08-23
+SRC-028,Glider synthesis,https://conwaylife.com/wiki/Glider_synthesis,community status,154-cell unsynthesizable still life and current threshold,2026-08-23
+SRC-029,Glider destruction,https://conwaylife.com/wiki/Glider_destruction,community status with stale-risk,Lists unresolved questions as of September 2023,2026-08-23
+SRC-030,ConwayLife forums,https://conwaylife.com/forums/,community forum,"Active discussion, announcement and first-verification venue",2026-08-23
+SRC-031,LifeWiki,https://conwaylife.com/wiki/,community wiki,"Pattern collection, tutorials and status pages",2026-08-23
+SRC-032,TheoremDB strong-universality tracker,https://www.theoremdb.org/statements/P2830/,secondary tracker,July 2026 status audit and bounded work,2026-08-23
+SRC-033,Journal of Cellular Automata,https://www.oldcitypublishing.com/journals/jca-home/,official journal,Scope includes theoretical CA and CA computational models,2026-08-23
+SRC-034,Complex Systems,https://www.complex-systems.com/,official journal,"Complex-systems journal, electronic submissions and no publication charges",2026-08-23
+SRC-035,Journal of Open Source Software,https://joss.theoj.org/about,official journal,"Requirements for meaningful, feature-complete research software",2026-08-23
+SRC-036,AUTOMATA/ACRI 2026,https://www.automataandacri2026.ugent.be/,official conference,Recurring specialist cellular-automata conference series,2026-08-23

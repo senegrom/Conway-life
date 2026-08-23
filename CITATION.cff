@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "Please cite the repository release and the primary sources relevant to any reused result."
+title: "Conway Life Open Research"
+type: software
+authors:
+  - name: "Conway Life Open Research contributors"
+version: 0.1.0
+date-released: 2026-08-23
+license: MIT
+repository-code: "REPLACE_WITH_REPOSITORY_URL"
+abstract: "A reproducible research workspace for high-performance Conway Life simulation and open-problem searches."
+keywords:
+  - cellular automata
+  - Conway's Game of Life
+  - HashLife
+  - reproducibility
+  - SAT

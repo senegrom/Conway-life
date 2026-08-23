@@ -1,0 +1,4 @@
+#N Glider
+#C Moves by (1,1) after four generations in this orientation.
+x = 3, y = 3, rule = B3/S23
+bo$2bo$3o!
