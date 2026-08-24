@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "run_id": "eb03c6f1-281d-4aff-9078-24100786386a",
+  "timestamp_utc": "2026-08-23T21:48:59.989186Z",
+  "engine_id": "GOLLY-HASHLIFE",
+  "engine_version": "5.0",
+  "engine_commit": null,
+  "algorithm": "HashLife",
+  "workload_id": "sanity-block",
+  "input_sha256": "ccedb026c9e8a25e10ebdfad554129e3c186a32cc6de3258dc1dbaea509eab4a",
+  "topology": "unbounded",
+  "generations": 1,
+  "repetition": 1,
+  "cold_start": true,
+  "command": [
+    "E:\\life-research\\golly\\golly-5.0-win-64bit\\bgolly.exe",
+    "-q",
+    "-a",
+    "HashLife",
+    "-m",
+    "1",
+    "-o",
+    "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\states\\2026-08-23__GOLLY-HASHLIFE__sanity-block__r1.rle",
+    "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\patterns\\block.rle"
+  ],
+  "wall_seconds": 0.013508300005923957,
+  "initialization_seconds": null,
+  "update_seconds": null,
+  "peak_rss_bytes": null,
+  "peak_vram_bytes": null,
+  "return_code": 0,
+  "host": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.5",
+    "cpu": "AMD64 Family 25 Model 97 Stepping 3, AuthenticAMD",
+    "gpu": null,
+    "ram_bytes": null,
+    "driver": null,
+    "compiler": null,
+    "build_flags": null
+  },
+  "output": {
+    "state_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\states\\2026-08-23__GOLLY-HASHLIFE__sanity-block__r1.rle",
+    "sha256": "1fed3db6335d766394940ae4c7be946173552bf373438d8c3cf2d8d7ac54d753",
+    "stdout_sha256": "6d1e7ce5741a5a80ac1ddad657eeb8e5d8010c74be56ccb2ba6ccb6823ebe57c",
+    "stderr_sha256": "c43aec816b74dd9d07011cdd371af51b953d424568f4e2b648a39bf16fd2bd84"
+  },
+  "logs": {
+    "stdout_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\2026-08-23__GOLLY-HASHLIFE__sanity-block__r1.json.stdout.txt",
+    "stderr_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\2026-08-23__GOLLY-HASHLIFE__sanity-block__r1.json.stderr.txt"
+  },
+  "notes": "correctness-adapter validation run; wall time includes full bgolly process lifecycle (parse+run+write); official Golly 5.0 win-64bit binary"
+}

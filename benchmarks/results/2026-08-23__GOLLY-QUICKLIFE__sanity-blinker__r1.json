@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "run_id": "9c4c54cf-3e5e-4b97-ae2f-19b2c6fcbc2f",
+  "timestamp_utc": "2026-08-23T21:49:00.232233Z",
+  "engine_id": "GOLLY-QUICKLIFE",
+  "engine_version": "5.0",
+  "engine_commit": null,
+  "algorithm": "QuickLife",
+  "workload_id": "sanity-blinker",
+  "input_sha256": "437f14f4e0799de43b32bbda0f26589040b51b06f2e01fcd20bd7821ca71d3af",
+  "topology": "unbounded",
+  "generations": 2,
+  "repetition": 1,
+  "cold_start": true,
+  "command": [
+    "E:\\life-research\\golly\\golly-5.0-win-64bit\\bgolly.exe",
+    "-q",
+    "-a",
+    "QuickLife",
+    "-m",
+    "2",
+    "-o",
+    "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\states\\2026-08-23__GOLLY-QUICKLIFE__sanity-blinker__r1.rle",
+    "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\patterns\\blinker.rle"
+  ],
+  "wall_seconds": 0.023945200024172664,
+  "initialization_seconds": null,
+  "update_seconds": null,
+  "peak_rss_bytes": null,
+  "peak_vram_bytes": null,
+  "return_code": 0,
+  "host": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.5",
+    "cpu": "AMD64 Family 25 Model 97 Stepping 3, AuthenticAMD",
+    "gpu": null,
+    "ram_bytes": null,
+    "driver": null,
+    "compiler": null,
+    "build_flags": null
+  },
+  "output": {
+    "state_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\states\\2026-08-23__GOLLY-QUICKLIFE__sanity-blinker__r1.rle",
+    "sha256": "34605c54470ae13f1bb866df9071901bb8aee1fe7871aea8e568a08173c83880",
+    "stdout_sha256": "83709408387cc014479d6ed49aefa9e0efa363152c52da76995b501568f7ea22",
+    "stderr_sha256": "74769a0add74720b0a6a9ff977a3a25bc742f1e275aaf1b92bb07627c107159b"
+  },
+  "logs": {
+    "stdout_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\2026-08-23__GOLLY-QUICKLIFE__sanity-blinker__r1.json.stdout.txt",
+    "stderr_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\2026-08-23__GOLLY-QUICKLIFE__sanity-blinker__r1.json.stderr.txt"
+  },
+  "notes": "correctness-adapter validation run; wall time includes full bgolly process lifecycle (parse+run+write); official Golly 5.0 win-64bit binary"
+}

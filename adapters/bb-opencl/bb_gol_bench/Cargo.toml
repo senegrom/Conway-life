@@ -1,0 +1,15 @@
+[package]
+name = "bb_gol_bench"
+version = "0.1.0"
+edition = "2021"
+description = "Benchmark adapter wrapping binary-banter/fast-game-of-life for the Conway-life benchmark suite"
+
+[dependencies]
+# Machine-specific path to the external engine clone (base commit b7d743e3 plus
+# patches/0001-bulk-buffer-access.patch). See ../README.md.
+fast-game-of-life = { path = "D:/Programs/life-research/src/fast-game-of-life", features = ["opencl"] }
+sha2 = "0.10"
+
+[profile.release]
+opt-level = 3
+lto = true

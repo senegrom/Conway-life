@@ -4,4 +4,14 @@ Generated from raw JSON. Workload families must be interpreted separately.
 
 | Workload | Engine | Runs | OK | Median s | Min s | Max s | Median RSS bytes |
 |---|---|---:|---:|---:|---:|---:|---:|
-| _no results yet_ | | | | | | | |
+| dense-plane-1024x2208-d31-s42 | BB-OPENCL | 3 | 3 | 0.374738 | 0.361826 | 0.419706 |  |
+| dense-plane-1024x2208-d31-s42 | GOLLY-QUICKLIFE | 3 | 3 | 0.884673 | 0.881748 | 0.928599 |  |
+| dense-plane-4096x4416-d31-s42 | BB-OPENCL | 3 | 3 | 2.498375 | 2.302146 | 2.799331 |  |
+| sanity-blinker | GOLLY-HASHLIFE | 1 | 1 | 0.014091 | 0.014091 | 0.014091 |  |
+| sanity-blinker | GOLLY-QUICKLIFE | 1 | 1 | 0.023945 | 0.023945 | 0.023945 |  |
+| sanity-block | GOLLY-HASHLIFE | 1 | 1 | 0.013508 | 0.013508 | 0.013508 |  |
+| sanity-block | GOLLY-QUICKLIFE | 1 | 1 | 0.121924 | 0.121924 | 0.121924 |  |
+| sanity-glider | GOLLY-HASHLIFE | 1 | 1 | 0.012295 | 0.012295 | 0.012295 |  |
+| sanity-glider | GOLLY-QUICKLIFE | 1 | 1 | 0.021760 | 0.021760 | 0.021760 |  |
+| sparse-rpentomino | GOLLY-HASHLIFE | 3 | 3 | 0.017285 | 0.016944 | 0.018205 |  |
+| sparse-rpentomino | GOLLY-QUICKLIFE | 3 | 3 | 0.044509 | 0.042338 | 0.050545 |  |

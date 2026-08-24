@@ -10,3 +10,4 @@ dist/
 scratch/
 benchmarks/results/*.stdout.txt
 benchmarks/results/*.stderr.txt
+adapters/**/target/

@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "run_id": "d329d399-124f-46d4-8e69-71b80d8837dd",
+  "timestamp_utc": "2026-08-24T07:21:18.786515Z",
+  "engine_id": "GOLLY-QUICKLIFE",
+  "engine_version": "5.0",
+  "engine_commit": null,
+  "algorithm": "QuickLife",
+  "workload_id": "dense-plane-1024x2208-d31-s42",
+  "input_sha256": "06db8ac963d9739bdbbe2b744814047863b197265312152fa9e8aadc0b223f77",
+  "topology": "bounded plane",
+  "generations": 1000,
+  "repetition": 1,
+  "cold_start": true,
+  "command": [
+    "E:\\life-research\\golly\\golly-5.0-win-64bit\\bgolly.exe",
+    "-q",
+    "-a",
+    "QuickLife",
+    "-m",
+    "1000",
+    "-o",
+    "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\states\\2026-08-24__GOLLY-QUICKLIFE__dense-plane-1024x2208-d31-s42__r1.rle",
+    "E:\\life-research\\datasets\\dense-plane-1024x2208-d31-s42.rle"
+  ],
+  "wall_seconds": 0.8817482000449672,
+  "initialization_seconds": null,
+  "update_seconds": null,
+  "peak_rss_bytes": null,
+  "peak_vram_bytes": null,
+  "return_code": 0,
+  "host": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.5",
+    "cpu": "AMD64 Family 25 Model 97 Stepping 3, AuthenticAMD",
+    "gpu": null,
+    "ram_bytes": null,
+    "driver": null,
+    "compiler": null,
+    "build_flags": null
+  },
+  "output": {
+    "state_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\states\\2026-08-24__GOLLY-QUICKLIFE__dense-plane-1024x2208-d31-s42__r1.rle",
+    "sha256": "ef7cee07d511c14bc2d5f0f8426239b240c85a51b2f7dcb7998bc5838c2a1630",
+    "stdout_sha256": "04e47ef8c008888e3c42dcfc1efb1651e5c9b34cf3126db96d3ba891247ec013",
+    "stderr_sha256": "64cff9b986e9d452ae97a6a3eeb578b17e33b9cd19712907e929edd5a9099cf7"
+  },
+  "logs": {
+    "stdout_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\2026-08-24__GOLLY-QUICKLIFE__dense-plane-1024x2208-d31-s42__r1.json.stdout.txt",
+    "stderr_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\2026-08-24__GOLLY-QUICKLIFE__dense-plane-1024x2208-d31-s42__r1.json.stderr.txt"
+  },
+  "notes": "official Golly 5.0 win-64bit binary; bounded plane via RLE rule B3/S23:P1024,2208; output RLE lacks position (bgolly writes plain RLE), verified against BB raster by bbox-normalised content"
+}

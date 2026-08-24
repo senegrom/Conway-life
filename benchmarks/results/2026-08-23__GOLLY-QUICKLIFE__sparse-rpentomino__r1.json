@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "run_id": "21e22ea0-8a61-46a1-8b3a-55edf6a096fd",
+  "timestamp_utc": "2026-08-23T21:49:02.580758Z",
+  "engine_id": "GOLLY-QUICKLIFE",
+  "engine_version": "5.0",
+  "engine_commit": null,
+  "algorithm": "QuickLife",
+  "workload_id": "sparse-rpentomino",
+  "input_sha256": "51b0af9a2301568df28d3bff0650c17e8ab1949b84a8c4a2df0144f9e307b265",
+  "topology": "unbounded",
+  "generations": 50000,
+  "repetition": 1,
+  "cold_start": true,
+  "command": [
+    "E:\\life-research\\golly\\golly-5.0-win-64bit\\bgolly.exe",
+    "-q",
+    "-a",
+    "QuickLife",
+    "-m",
+    "50000",
+    "-o",
+    "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\states\\2026-08-23__GOLLY-QUICKLIFE__sparse-rpentomino__r1.rle",
+    "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\patterns\\r-pentomino.rle"
+  ],
+  "wall_seconds": 0.05054480000399053,
+  "initialization_seconds": null,
+  "update_seconds": null,
+  "peak_rss_bytes": null,
+  "peak_vram_bytes": null,
+  "return_code": 0,
+  "host": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.5",
+    "cpu": "AMD64 Family 25 Model 97 Stepping 3, AuthenticAMD",
+    "gpu": null,
+    "ram_bytes": null,
+    "driver": null,
+    "compiler": null,
+    "build_flags": null
+  },
+  "output": {
+    "state_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\states\\2026-08-23__GOLLY-QUICKLIFE__sparse-rpentomino__r1.rle",
+    "sha256": "6613d9637ceaebd6918f5a4b286439626212cafbcb9c23b6682de062f1249785",
+    "stdout_sha256": "8d11c735835c525ba79f51db04bd99ddd344f0130c9e3b0ea0bc9f2b3370bd35",
+    "stderr_sha256": "4287aa98d79380c4d024af3c47aba20dacded1b67146a4436aa3e3867865be3a"
+  },
+  "logs": {
+    "stdout_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\2026-08-23__GOLLY-QUICKLIFE__sparse-rpentomino__r1.json.stdout.txt",
+    "stderr_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\2026-08-23__GOLLY-QUICKLIFE__sparse-rpentomino__r1.json.stderr.txt"
+  },
+  "notes": "correctness-adapter validation run; wall time includes full bgolly process lifecycle (parse+run+write); official Golly 5.0 win-64bit binary"
+}

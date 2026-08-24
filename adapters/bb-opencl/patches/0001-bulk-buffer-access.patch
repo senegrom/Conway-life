@@ -1,0 +1,50 @@
+diff --git a/src/opencl.rs b/src/opencl.rs
+index 9866d2c..42b4f59 100644
+--- a/src/opencl.rs
++++ b/src/opencl.rs
+@@ -228,6 +228,45 @@ impl Game {
+         }
+         word & nibble != 0
+     }
++
++    /// Returns the padded buffer dimensions as (columns, height), in u32
++    /// words and rows respectively.
++    pub fn buffer_dims(&self) -> (usize, usize) {
++        (self.columns, self.height)
++    }
++
++    /// Returns the compile-time paddings as (padding_x, padding_y), in u32
++    /// words and rows respectively.
++    pub fn paddings() -> (usize, usize) {
++        (*PADDING_X, *PADDING_Y)
++    }
++
++    /// Returns the number of core rows each work group writes back per launch.
++    /// The simulated universe height is always a multiple of this value.
++    pub fn simulation_rows() -> usize {
++        *WORK_GROUP_SIZE * *WORK_PER_THREAD - 2 * *PADDING_Y
++    }
++
++    /// Reads the entire padded field buffer in one blocking transfer.
++    pub fn read_buffer_words(&self) -> Vec<u32> {
++        let mut words = vec![0u32; self.columns * self.height];
++        unsafe {
++            self.queue
++                .enqueue_read_buffer(&self.field_buffer, CL_BLOCKING, 0, &mut words, &[])
++                .unwrap();
++        }
++        words
++    }
++
++    /// Writes the entire padded field buffer in one blocking transfer.
++    pub fn write_buffer_words(&mut self, words: &[u32]) {
++        assert_eq!(words.len(), self.columns * self.height);
++        unsafe {
++            self.queue
++                .enqueue_write_buffer(&mut self.field_buffer, CL_BLOCKING, 0, words, &[])
++                .unwrap();
++        }
++    }
+ }
+ 
+ impl Display for Game {

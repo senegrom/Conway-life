@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "run_id": "3af7a4b0-3660-4f2e-86a8-26c9306e8c45",
+  "timestamp_utc": "2026-08-24T07:21:09.897896Z",
+  "engine_id": "BB-OPENCL",
+  "engine_version": "0.1.0",
+  "engine_commit": "b7d743e3+0001+0002",
+  "algorithm": "bit-packed 16-step temporal blocking (OpenCL)",
+  "workload_id": "dense-plane-1024x2208-d31-s42",
+  "input_sha256": "06db8ac963d9739bdbbe2b744814047863b197265312152fa9e8aadc0b223f77",
+  "topology": "bounded plane",
+  "generations": 1000,
+  "repetition": 3,
+  "cold_start": true,
+  "command": [
+    "E:\\life-research\\build\\bb_gol_bench\\release\\bb_gol_bench.exe",
+    "--width",
+    "1024",
+    "--height",
+    "2208",
+    "--density-ppm",
+    "310000",
+    "--seed",
+    "42",
+    "--gens",
+    "1000",
+    "--engine",
+    "opencl"
+  ],
+  "wall_seconds": 0.37473849998787045,
+  "initialization_seconds": 0.154581,
+  "update_seconds": 0.002039,
+  "peak_rss_bytes": null,
+  "peak_vram_bytes": null,
+  "return_code": 0,
+  "host": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.5",
+    "cpu": "AMD64 Family 25 Model 97 Stepping 3, AuthenticAMD",
+    "gpu": "NVIDIA GeForce RTX 5070 Ti 16GiB",
+    "ram_bytes": null,
+    "driver": "610.47",
+    "compiler": "rustc 1.98.0 x86_64-pc-windows-gnu; NVIDIA OpenCL JIT",
+    "build_flags": null
+  },
+  "output": {
+    "state_file": null,
+    "sha256": null,
+    "stdout_sha256": "daa9ab3e9752c5c7c92820793c099c1177c130be1445546d0fb7f93cb04f999a",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "logs": {
+    "stdout_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\2026-08-24__BB-OPENCL__dense-plane-1024x2208-d31-s42__r3.json.stdout.txt",
+    "stderr_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\2026-08-24__BB-OPENCL__dense-plane-1024x2208-d31-s42__r3.json.stderr.txt"
+  },
+  "notes": "adapter bb_gol_bench (adapters/bb-opencl); engine base b7d743e3 + patches 0001 (bulk buffer access) and 0002 (multi-step boundary-leak fix, found during this benchmark); adapter regenerates the pinned splitmix64 fill internally and asserts the same input raster digest as the pinned RLE; init/update/readback split and canonical output digest are in the run stdout JSON | adapter-reported: universe=1024x2208 input_raster_sha256=93d5ccebfad45590b50e35aa30d8b6dbfb8da4faf8698190a1cfc340da815df3 output_raster_sha256=7c4b18d38261387c8613623220e35cb66622beb9f61c56405df691fa827c1df8 output_population=96689 init=0.154581s update=0.002039s readback=0.000163s"
+}

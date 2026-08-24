@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "run_id": "31121591-4d5e-4675-9d93-21abd700b710",
+  "timestamp_utc": "2026-08-23T21:49:03.952514Z",
+  "engine_id": "GOLLY-HASHLIFE",
+  "engine_version": "5.0",
+  "engine_commit": null,
+  "algorithm": "HashLife",
+  "workload_id": "sparse-rpentomino",
+  "input_sha256": "51b0af9a2301568df28d3bff0650c17e8ab1949b84a8c4a2df0144f9e307b265",
+  "topology": "unbounded",
+  "generations": 50000,
+  "repetition": 1,
+  "cold_start": true,
+  "command": [
+    "E:\\life-research\\golly\\golly-5.0-win-64bit\\bgolly.exe",
+    "-q",
+    "-a",
+    "HashLife",
+    "-m",
+    "50000",
+    "-o",
+    "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\states\\2026-08-23__GOLLY-HASHLIFE__sparse-rpentomino__r1.rle",
+    "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\patterns\\r-pentomino.rle"
+  ],
+  "wall_seconds": 0.017284800007473677,
+  "initialization_seconds": null,
+  "update_seconds": null,
+  "peak_rss_bytes": null,
+  "peak_vram_bytes": null,
+  "return_code": 0,
+  "host": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.5",
+    "cpu": "AMD64 Family 25 Model 97 Stepping 3, AuthenticAMD",
+    "gpu": null,
+    "ram_bytes": null,
+    "driver": null,
+    "compiler": null,
+    "build_flags": null
+  },
+  "output": {
+    "state_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\states\\2026-08-23__GOLLY-HASHLIFE__sparse-rpentomino__r1.rle",
+    "sha256": "6613d9637ceaebd6918f5a4b286439626212cafbcb9c23b6682de062f1249785",
+    "stdout_sha256": "e66445d49efd3f1140b16b123c12a55c83f0dc92edd40204cffdc5a7a52d7003",
+    "stderr_sha256": "aaee7025e1f5010da13c2a3218b70132163166651d01499ac744e250acb5514e"
+  },
+  "logs": {
+    "stdout_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\2026-08-23__GOLLY-HASHLIFE__sparse-rpentomino__r1.json.stdout.txt",
+    "stderr_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\2026-08-23__GOLLY-HASHLIFE__sparse-rpentomino__r1.json.stderr.txt"
+  },
+  "notes": "correctness-adapter validation run; wall time includes full bgolly process lifecycle (parse+run+write); official Golly 5.0 win-64bit binary"
+}
