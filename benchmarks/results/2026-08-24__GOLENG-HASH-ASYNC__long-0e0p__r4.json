@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0",
+  "run_id": "b8cec7e1-283c-45a7-ae6b-c191614eb333",
+  "timestamp_utc": "2026-08-24T19:26:40.157435Z",
+  "engine_id": "GOLENG-HASH-ASYNC",
+  "engine_version": "0.2.1",
+  "engine_commit": "9247f831+0001",
+  "algorithm": "parallel HashLife (tokio, 6 workers)",
+  "workload_id": "long-0e0p",
+  "input_sha256": "5e739002c2f1f527fdbdd88cf1b3a4b349b207c3f47d4d95482270a671aeb905",
+  "topology": "unbounded",
+  "generations": 16384,
+  "repetition": 4,
+  "cold_start": true,
+  "command": [
+    "D:\\Programs\\life-research\\build\\gol_engines\\release\\gol_engines_cli.exe",
+    "update",
+    "D:\\Programs\\life-research\\src\\gol_engines\\res\\very_large_patterns\\0e0p-metaglider.mc.gz",
+    "--output=D:\\Programs\\life-research\\datasets\\2026-08-24__GOLENG-HASH-ASYNC__long-0e0p__r4.mc.gz",
+    "--population",
+    "--engine=hashlife",
+    "--workers=6",
+    "--mem-limit-gib=12",
+    "--gens-log2=14",
+    "--step-log2=12"
+  ],
+  "wall_seconds": 241.89855310000002,
+  "initialization_seconds": 0.0,
+  "update_seconds": 234.1,
+  "peak_rss_bytes": null,
+  "peak_vram_bytes": null,
+  "return_code": 0,
+  "host": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.5",
+    "cpu": "AMD64 Family 25 Model 97 Stepping 3, AuthenticAMD",
+    "gpu": null,
+    "ram_bytes": null,
+    "driver": null,
+    "compiler": "rustc 1.98.0 x86_64-pc-windows-gnu",
+    "build_flags": null
+  },
+  "output": {
+    "state_file": "D:\\Programs\\life-research\\datasets\\2026-08-24__GOLENG-HASH-ASYNC__long-0e0p__r4.mc.gz",
+    "sha256": "830f0e4d9d9ace8ff20392c78287eed67a0e8cf72f6a81ca27b875e2de04b6a8",
+    "stdout_sha256": "cfcfe1749096d75bedc8c67d40c9fbed6a144a94df8024be4e3e0344b8c9f6ce",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "logs": {
+    "stdout_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\2026-08-24__GOLENG-HASH-ASYNC__long-0e0p__r4.json.stdout.txt",
+    "stderr_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\2026-08-24__GOLENG-HASH-ASYNC__long-0e0p__r4.json.stderr.txt"
+  },
+  "notes": "native Windows build; base 9247f831+0001; cross-verification run: 2^14 generations to compare against the GOLENG-STREAM-ASYNC state (expected canonical hash 0xf65baa30355c3ff6, population 93_238_830); 12 GiB tables force step reduction/GC at this horizon, so timing is not comparable to the r1-r3 2^12 repetitions | cli-reported: init=0.0s load=2.3s update(2^14)=234.1s population=93_238_830"
+}

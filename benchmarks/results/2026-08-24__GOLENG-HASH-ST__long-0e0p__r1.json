@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0",
+  "run_id": "5ce2123b-d858-4d90-a3d0-dbbce38ec237",
+  "timestamp_utc": "2026-08-24T13:22:11.222278Z",
+  "engine_id": "GOLENG-HASH-ST",
+  "engine_version": "0.2.1",
+  "engine_commit": "9247f831+0001",
+  "algorithm": "single-threaded HashLife",
+  "workload_id": "long-0e0p",
+  "input_sha256": "5e739002c2f1f527fdbdd88cf1b3a4b349b207c3f47d4d95482270a671aeb905",
+  "topology": "unbounded",
+  "generations": 4096,
+  "repetition": 1,
+  "cold_start": true,
+  "command": [
+    "D:\\Programs\\life-research\\build\\gol_engines\\release\\gol_engines_cli.exe",
+    "update",
+    "D:\\Programs\\life-research\\src\\gol_engines\\res\\very_large_patterns\\0e0p-metaglider.mc.gz",
+    "--output=D:\\Programs\\life-research\\datasets\\2026-08-24__GOLENG-HASH-ST__long-0e0p__r1.mc.gz",
+    "--population",
+    "--engine=hashlife-st",
+    "--mem-limit-gib=12",
+    "--gens-log2=12"
+  ],
+  "wall_seconds": 351.83631539996713,
+  "initialization_seconds": 4.8,
+  "update_seconds": 329.9,
+  "peak_rss_bytes": null,
+  "peak_vram_bytes": null,
+  "return_code": 0,
+  "host": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.5",
+    "cpu": "AMD64 Family 25 Model 97 Stepping 3, AuthenticAMD",
+    "gpu": null,
+    "ram_bytes": null,
+    "driver": null,
+    "compiler": "rustc 1.98.0 x86_64-pc-windows-gnu",
+    "build_flags": null
+  },
+  "output": {
+    "state_file": "D:\\Programs\\life-research\\datasets\\2026-08-24__GOLENG-HASH-ST__long-0e0p__r1.mc.gz",
+    "sha256": "c03b273572c25ee9642d5f8ef1161793e07441f63633e6957619681e2db83bf6",
+    "stdout_sha256": "cc60bf03e9572407b58f31595914026d2065faaacb1b3c25eb68ab0ea8a69b21",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "logs": {
+    "stdout_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\2026-08-24__GOLENG-HASH-ST__long-0e0p__r1.json.stdout.txt",
+    "stderr_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\2026-08-24__GOLENG-HASH-ST__long-0e0p__r1.json.stderr.txt"
+  },
+  "notes": "native Windows build, Rust 1.98.0 x86_64-pc-windows-gnu; base 9247f831 + local Rust-1.98 autoref build fix (adapters/gol-engines/patches/0001); Ryzen 5 7500X3D 6C/12T 31GiB; reduced scale vs author benchmark due to RAM; expected population 93_237_300 per upstream README; init/load/update split in stdout log; output canonical hash appended post-run | cli-reported: init=4.8s load=11.1s update(2^12)=329.9s population=93_237_300"
+}

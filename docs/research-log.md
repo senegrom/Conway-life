@@ -82,3 +82,28 @@
 - `adapters/bb-opencl/` — adapter crate (`bb_gol_bench`), patches, README with full reproduction steps.
 - `scripts/gen_dense_workload.py`, `scripts/digest_bounded_rle.py` — pinned-workload generation and bounded-state digesting/matching.
 - Verification conventions: canonical raster digest (universe-anchored) for engines with known placement; bbox-normalised content match for Golly's position-free RLE output.
+
+## 2026-08-24 — gol_engines builds natively on Windows; 0E0P claims partially reproduced; GPU-port feasibility measured
+
+### Native build (no WSL2 required)
+
+- `das67333/gol_engines` at `9247f831` (v0.2.1) is pure Rust (tokio/ahash/flate2) and builds with the GNU toolchain after a **one-line fix**: the implicit autoref through a raw pointer in the `_mm_prefetch` call (`quadtree_sync/memory.rs`) became a hard error (`dangerous_implicit_autorefs`) on Rust 1.98. Patch: `adapters/gol-engines/patches/0001-fix-rust198-autoref.patch`; upstream PR candidate. All 31 tests pass.
+- The full benchmark corpus ships in-repo (`res/very_large_patterns/`, incl. `0e0p-metaglider.mc.gz`), so the environment doc's WSL2 assumption is wrong for this engine; corrected scope: WSL2 remains relevant for lifelib/apgsearch/LSSS/ikpx2 only.
+
+### 0E0P reproduction (reduced scale: 2^12 generations, 12 GiB tables, 6 cores vs the author's 2^14, ≥64 GiB, 32 cores)
+
+- `stats` reproduces the upstream README exactly: hash `0xc322148cce4e1279`, population 93,235,805, 818,007 nodes, identical size distribution.
+- `update --gens-log2=12` gives population **93,237,300** (the README value) on every engine variant and repetition; canonical output hash `0x02dda802a893049e` and even the output `.mc.gz` bytes are identical across engines and repetitions.
+- Recorded (`2026-08-24__GOLENG-*`, workload `long-0e0p`): parallel HashLife (6 workers) update 63.6 / 66.0 s (r3 contaminated by concurrent builds, flagged in its JSON); single-threaded 329.9 s → **5.1× on 6 workers**, consistent with the author's ~10× on 24 workers; parallel StreamLife at 2^14: update 107.8 s, population 93,238,830, canonical hash `0xf65baa30355c3ff6`.
+- Independent cross-check (r4): parallel HashLife at 2^14 (step-log2=12, GC-forced) reproduces the StreamLife state exactly — canonical hash `0xf65baa30355c3ff6`, population 93,238,830. HashLife and StreamLife agree bit-for-bit at 2^14.
+
+### GPU-port feasibility (the "port it to GPU" question)
+
+HashLife's structure determines the answer. The only offloadable dense arithmetic is the leaf base case (16×16 → 8×8, ≤4 generations, `update_leaves`); everything else is memoized-hashtable pointer chasing, and every unique leaf is computed once then cached, so leaf work is a one-time cost per unique configuration.
+
+Measurements (branch `leaf-instr`, worktree `D:\Programs\life-research\src\goleng-instr`, kept GPL-side and out of this repo):
+
+- `gpu_leaf_bench` (OpenCL, one leaf task per work item, bit-identical to CPU): CPU single core 6.31 M leaves/s (158.5 ns/leaf); RTX 5070 Ti end-to-end incl. PCIe: 4.4 M/s at batch 1k (launch-bound, ≈ CPU), 213 M/s at 64k, **peak ≈230 M/s at 512k**, 140 M/s at 4M (read-back-bound). GPU wins only when ≥ tens of thousands of independent leaf tasks can be batched per round trip — but the recursion produces them one at a time at memoization misses, so batching would require restructuring the engine around deferred leaf resolution.
+- Instrumented single-threaded 0E0P run at 2^12 (same parameters as the clean 329.9 s recorded run; instrumented run's own wall time contaminated by concurrent jobs and not used): **21,488 leaf calls** total; 6 ms in leaf arithmetic, 11 ms in `update_leaves` including its hashtable insertion; population 93,237,300 ✓.
+
+**Verdict: a GPU port of gol_engines' HashLife is not viable via leaf offload, with certainty.** Memoization leaves only ~21k unique leaf computations for the whole 2^12-generation 0E0P update — **≈0.003%** of the single-threaded 329.9 s. An infinitely fast GPU leaf path yields ≤1.0001× end-to-end (Amdahl); even the batching prerequisite (≥ tens of thousands of independent tasks per PCIe round trip, from the microbench) exceeds the total number of leaf tasks that exist. The remaining 99.997% is memoized-hashtable probing and node construction — latency-bound pointer chasing that PCIe-attached GPUs make worse, not better. This measured negative result settles research-report §11 idea 3 ("GPU leaf kernels for a quadtree engine") for HashLife-class engines on compressible patterns: the correct division of labour stands — HashLife-family on CPU for compressible workloads, dense GPU engines (BB-OPENCL, CAT) where every cell must be updated. A GPU HashLife would require moving the entire hashtable/recursion machinery on-device (a research programme, not a port), and the memoization profile gives it no arithmetic to win back.

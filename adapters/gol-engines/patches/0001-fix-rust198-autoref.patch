@@ -1,0 +1,30 @@
+From fa7fb0f86371624dccbe79685183b837f4e95a7f Mon Sep 17 00:00:00 2001
+From: senegrom <6349874+senegrom@users.noreply.github.com>
+Date: Mon, 24 Aug 2026 14:13:38 +0100
+Subject: [PATCH] Fix dangerous_implicit_autorefs error on Rust 1.98
+
+Explicit autoref for the prefetch pointer; the implicit form became a
+hard error.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01KqqikuvhfnNJfDN6P9fZh9
+---
+ src/quadtree_sync/memory.rs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/quadtree_sync/memory.rs b/src/quadtree_sync/memory.rs
+index e584442..d55e4f2 100755
+--- a/src/quadtree_sync/memory.rs
++++ b/src/quadtree_sync/memory.rs
+@@ -27,7 +27,7 @@ impl<Extra: Clone + Default> PrefetchedNode<Extra> {
+         unsafe {
+             use std::arch::x86_64::*;
+             let idx = hash & ((*mem.base.get()).hashtable.len() - 1);
+-            _mm_prefetch::<_MM_HINT_T0>((*mem.base.get()).hashtable.get_unchecked(idx)
++            _mm_prefetch::<_MM_HINT_T0>((&(*mem.base.get()).hashtable).get_unchecked(idx)
+                 as *const QuadTreeNode<Extra> as *const i8);
+         }
+         Self {
+-- 
+2.54.0.windows.1
+
