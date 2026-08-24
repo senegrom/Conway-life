@@ -19,8 +19,9 @@ cargo build --release --bin gol_engines_cli --features=cli_deps
 
 `patches/0001-fix-rust198-autoref.patch`: one-line fix — the implicit autoref
 through a raw pointer in `quadtree_sync/memory.rs` (`_mm_prefetch` argument)
-became a hard error (`dangerous_implicit_autorefs`) on Rust 1.98. Candidate
-for an upstream PR. The full test suite (31 tests) passes with it.
+became a hard error (`dangerous_implicit_autorefs`) on Rust 1.98. Filed
+upstream: https://github.com/das67333/gol_engines/pull/5. The full test
+suite (31 tests) passes with it.
 
 The benchmark corpus ships in the repo (`res/very_large_patterns/`, including
 `0e0p-metaglider.mc.gz`).

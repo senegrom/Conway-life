@@ -87,7 +87,7 @@
 
 ### Native build (no WSL2 required)
 
-- `das67333/gol_engines` at `9247f831` (v0.2.1) is pure Rust (tokio/ahash/flate2) and builds with the GNU toolchain after a **one-line fix**: the implicit autoref through a raw pointer in the `_mm_prefetch` call (`quadtree_sync/memory.rs`) became a hard error (`dangerous_implicit_autorefs`) on Rust 1.98. Patch: `adapters/gol-engines/patches/0001-fix-rust198-autoref.patch`; upstream PR candidate. All 31 tests pass.
+- `das67333/gol_engines` at `9247f831` (v0.2.1) is pure Rust (tokio/ahash/flate2) and builds with the GNU toolchain after a **one-line fix**: the implicit autoref through a raw pointer in the `_mm_prefetch` call (`quadtree_sync/memory.rs`) became a hard error (`dangerous_implicit_autorefs`) on Rust 1.98. Patch: `adapters/gol-engines/patches/0001-fix-rust198-autoref.patch`; filed upstream as https://github.com/das67333/gol_engines/pull/5 (fork senegrom/gol_engines, branch fix/rust-1.98-autoref). All 31 tests pass.
 - The full benchmark corpus ships in-repo (`res/very_large_patterns/`, incl. `0e0p-metaglider.mc.gz`), so the environment doc's WSL2 assumption is wrong for this engine; corrected scope: WSL2 remains relevant for lifelib/apgsearch/LSSS/ikpx2 only.
 
 ### 0E0P reproduction (reduced scale: 2^12 generations, 12 GiB tables, 6 cores vs the author's 2^14, ≥64 GiB, 32 cores)
