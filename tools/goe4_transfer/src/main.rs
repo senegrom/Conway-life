@@ -254,6 +254,11 @@ fn main() {
         return;
     }
 
+    if args.mode == "pairs" {
+        run_pairs(&nfa, height, args.dead_rows, args.report_every);
+        return;
+    }
+
     // --mode search
     let (class, n_classes) = bisim_classes(&nfa, true);
     println!("bisimulation quotient: {} -> {} classes", nfa.n, n_classes);
@@ -343,6 +348,142 @@ fn main() {
         args.dead_rows,
         antichain.len()
     );
+}
+
+/// k=2 witness-family greatest fixpoint. A family F of nonempty state sets of
+/// size <= 2 is CLOSED if for every W in F and every sigma there is W' in F
+/// with W' a subset of succ_sigma(W). A nonempty closed family proves the NFA
+/// universal (walk any word forward through the family; every state of the
+/// final witness pulls back to a full run). The k=1 restriction is the
+/// sigma-total core, already known empty at d=0 and d=1; k=2 asks whether
+/// two-state lookahead suffices.
+///
+/// Representation is d=0-specific for speed: preimage columns fit in a u64
+/// (ncols <= 64), successors of a state live inside one row of the state
+/// grid, and the pair matrix is 4096x4096 bits.
+fn run_pairs(nfa: &Nfa, height: u32, dead_rows: u32, report_every: u64) {
+    let ncols: usize = 1 << (height + 2);
+    if ncols > 64 {
+        eprintln!("pairs mode currently supports dead-rows 0 only (ncols <= 64)");
+        std::process::exit(4);
+    }
+    let n = nfa.n; // 4096
+
+    // c-mask per (sigma, state): successors of s = (a, b2) are (b2, c) with
+    // c in the mask.
+    let mut c_mask = vec![[0u64; N_SIGMA]; n];
+    for sigma in 0..N_SIGMA {
+        for s in 0..n {
+            let mut m = 0u64;
+            for &t in &nfa.succ[sigma][s] {
+                m |= 1u64 << ((t as usize) % ncols);
+            }
+            c_mask[s][sigma] = m;
+        }
+    }
+    let row_of = |s: usize| s % ncols; // successor row is the second column b2
+
+    let mut alive1 = vec![u64::MAX; ncols]; // alive1[r] bit c = state r*64+c
+    let mut alive2: Vec<u64> = vec![u64::MAX; n * ncols]; // alive2[u*64+r] over v=(r,c)
+    for u in 0..n {
+        alive2[u * ncols + u / ncols] &= !(1u64 << (u % ncols)); // no {u,u}
+    }
+
+    // succ entries for a witness: up to two (row, mask) pairs, merged if equal rows.
+    let survives = |w: &[usize; 2], k: usize, sigma: usize,
+                    alive1: &[u64], alive2: &[u64]| -> bool {
+        let (r1, mut m1) = (row_of(w[0]), c_mask[w[0]][sigma]);
+        let (mut r2, mut m2) = (0usize, 0u64);
+        if k == 2 {
+            let (rb, mb) = (row_of(w[1]), c_mask[w[1]][sigma]);
+            if rb == r1 {
+                m1 |= mb;
+            } else {
+                r2 = rb;
+                m2 = mb;
+            }
+        }
+        if m1 == 0 && m2 == 0 {
+            return false;
+        }
+        // Surviving singleton inside the union?
+        if alive1[r1] & m1 != 0 || (m2 != 0 && alive1[r2] & m2 != 0) {
+            return true;
+        }
+        // Surviving pair inside the union?
+        let mut probe = |r: usize, m: u64| -> bool {
+            let mut bits = m;
+            while bits != 0 {
+                let c = bits.trailing_zeros() as usize;
+                bits &= bits - 1;
+                let u = r * 64 + c;
+                if alive2[u * 64 + r1] & m1 != 0 || (m2 != 0 && alive2[u * 64 + r2] & m2 != 0) {
+                    return true;
+                }
+            }
+            false
+        };
+        probe(r1, m1) || (m2 != 0 && probe(r2, m2))
+    };
+
+    let t0 = Instant::now();
+    let mut round = 0u32;
+    loop {
+        round += 1;
+        let mut removed = 0u64;
+        for s in 0..n {
+            if alive1[s / 64] & (1u64 << (s % 64)) == 0 {
+                continue;
+            }
+            let w = [s, 0];
+            if !(0..N_SIGMA).all(|sig| survives(&w, 1, sig, &alive1, &alive2)) {
+                alive1[s / 64] &= !(1u64 << (s % 64));
+                removed += 1;
+            }
+        }
+        for s in 0..n {
+            for r in 0..ncols {
+                let mut bits = alive2[s * 64 + r];
+                // only handle t > s once (symmetric matrix)
+                while bits != 0 {
+                    let c = bits.trailing_zeros() as usize;
+                    bits &= bits - 1;
+                    let t = r * 64 + c;
+                    if t <= s {
+                        continue;
+                    }
+                    let w = [s, t];
+                    if !(0..N_SIGMA).all(|sig| survives(&w, 2, sig, &alive1, &alive2)) {
+                        alive2[s * 64 + r] &= !(1u64 << c);
+                        alive2[t * 64 + s / 64] &= !(1u64 << (s % 64));
+                        removed += 1;
+                    }
+                }
+            }
+        }
+        let n1: u32 = alive1.iter().map(|w| w.count_ones()).sum();
+        let n2: u64 = alive2.iter().map(|w| w.count_ones() as u64).sum::<u64>() / 2;
+        println!(
+            "pairs round {round}: removed {removed}, singletons {n1}, pairs {n2} ({:.0}s)",
+            t0.elapsed().as_secs_f64()
+        );
+        let _ = report_every;
+        if removed == 0 {
+            if n1 > 0 || n2 > 0 {
+                println!(
+                    "UNIVERSAL at height {height} (dead rows {dead_rows}): nonempty closed \
+                     k<=2 witness family ({n1} singletons, {n2} pairs) — a two-state lookahead \
+                     strategy exists; no orphan of this shape at any width."
+                );
+                std::process::exit(0);
+            }
+            println!(
+                "K2 EMPTY at height {height} (dead rows {dead_rows}): no closed family of \
+                 witnesses of size <= 2; universality (known true for d=0) needs deeper lookahead."
+            );
+            std::process::exit(1);
+        }
+    }
 }
 
 fn run_core(nfa: &Nfa, height: u32, dead_rows: u32) {

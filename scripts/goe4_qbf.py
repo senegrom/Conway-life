@@ -169,11 +169,18 @@ def generate(dead_rows: int, width: int) -> tuple[str, dict[tuple[int, int], int
     return "\n".join(lines) + "\n", p_var
 
 
-def generate_dual(dead_rows: int, width: int) -> str:
+def generate_dual(dead_rows: int, width: int, symmetry: bool = False) -> str:
     """Dual instance: forall P exists X, aux: F(X) = window(P).
     TRUE  <=> every four-row pattern of width w has a preimage patch
           <=> no orphan of this shape with width <= w.
-    FALSE <=> an orphan exists (the solver's falsifying P is the witness)."""
+    FALSE <=> an orphan exists (the solver's falsifying P is the witness).
+
+    With symmetry=True the preimage obligation is restricted to lex-leaders
+    of the orbit under the strip-preserving symmetry group {column reversal,
+    row flip, 180-degree rotation}: orphan-hood is invariant under these, so
+    the answer is unchanged while the effective forall-space shrinks up to 4x.
+    Implemented as (lexleq(P, g(P)) for all g) -> (F(X) = window(P)), with
+    fully biconditional lex chains so the inner existential cannot cheat."""
     height = 4 + 2 * dead_rows
     ph, pw = height + 2, width + 2
 
@@ -209,24 +216,74 @@ def generate_dual(dead_rows: int, width: int) -> str:
             for value, mask in _OFF_COVER:
                 clauses.append(term_clause(value, mask, -t))
 
-    # F(X) = window(P): every output equals its window value.
+    # Optional symmetry breaking: L_g <-> lexleq(P, g(P)) for the three
+    # non-identity strip symmetries; the preimage obligation below is then
+    # guarded by (L_1 & L_2 & L_3).
+    guard: list[int] = []
+    aux_extra: list[int] = []
+    if symmetry:
+        order = [(i, j) for i in range(4) for j in range(width)]
+        symmetries = [
+            lambda i, j: (i, width - 1 - j),
+            lambda i, j: (3 - i, j),
+            lambda i, j: (3 - i, width - 1 - j),
+        ]
+        for g in symmetries:
+            xs = [p_var[pos] for pos in order]
+            ys = [p_var[g(*pos)] for pos in order]
+            m = len(xs)
+            e = {0: None}
+            big_l = fresh()
+            aux_extra.append(big_l)
+            vs: list[int] = []
+            prev_e: int | None = None
+            for k in range(1, m + 1):
+                xk, yk = xs[k - 1], ys[k - 1]
+                # v_k = prefix-equal(k-1) & x_k & -y_k
+                v = fresh()
+                aux_extra.append(v)
+                if prev_e is not None:
+                    clauses.append([-v, prev_e])
+                clauses.append([-v, xk])
+                clauses.append([-v, -yk])
+                vs.append(v)
+                # L -> not v_k  (expanded so L is refuted by any actual violation)
+                lead = [-big_l, -xk, yk] if prev_e is None else [-big_l, -prev_e, -xk, yk]
+                clauses.append(lead)
+                if k < m:
+                    ek = fresh()
+                    aux_extra.append(ek)
+                    if prev_e is not None:
+                        clauses.append([-ek, prev_e])
+                    clauses.append([-ek, -xk, yk])
+                    clauses.append([-ek, xk, -yk])
+                    if prev_e is not None:
+                        clauses.append([ek, -prev_e, xk, yk])
+                        clauses.append([ek, -prev_e, -xk, -yk])
+                    else:
+                        clauses.append([ek, xk, yk])
+                        clauses.append([ek, -xk, -yk])
+                    prev_e = ek
+            # -L -> some violation
+            clauses.append([big_l] + vs)
+            guard.append(-big_l)
+            del e
+
+    # F(X) = window(P): every output equals its window value (for lex-leaders).
     for i in range(height):
         for j in range(width):
             t = t_var[(i, j)]
             if dead_rows <= i < dead_rows + 4:
                 p = p_var[(i - dead_rows, j)]
-                clauses.append([-t, p])
-                clauses.append([t, -p])
+                clauses.append(guard + [-t, p])
+                clauses.append(guard + [t, -p])
             else:
-                clauses.append([-t])
+                clauses.append(guard + [-t])
 
     lines = [f"p cnf {next_var - 1} {len(clauses)}"]
     lines.append("a " + " ".join(str(v) for v in sorted(p_var.values())) + " 0")
-    lines.append(
-        "e "
-        + " ".join(str(v) for v in sorted(x_var.values()) + sorted(t_var.values()))
-        + " 0"
-    )
+    aux = sorted(x_var.values()) + sorted(t_var.values()) + aux_extra
+    lines.append("e " + " ".join(str(v) for v in aux) + " 0")
     lines.extend(" ".join(str(l) for l in c) + " 0" for c in clauses)
     return "\n".join(lines) + "\n"
 
@@ -261,10 +318,15 @@ def main() -> int:
         action="store_true",
         help="forall-P/exists-X form: TRUE = no orphan with width <= w, FALSE = orphan exists",
     )
+    parser.add_argument(
+        "--symmetry",
+        action="store_true",
+        help="dual form only: restrict the forall to lex-leaders of the strip symmetry group",
+    )
     args = parser.parse_args()
 
     if args.dual:
-        text = generate_dual(args.dead_rows, args.width)
+        text = generate_dual(args.dead_rows, args.width, args.symmetry)
         out = args.out or Path(f"goe4_dual_d{args.dead_rows}_w{args.width}.qdimacs")
         out.write_text(text, encoding="ascii", newline="\n")
         n_vars, n_clauses = text.split("\n", 1)[0].split()[2:4]
