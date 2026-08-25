@@ -1,0 +1,10 @@
+[package]
+name = "goe4_transfer"
+version = "0.1.0"
+edition = "2021"
+description = "Column-transfer antichain search for a four-row-live Garden of Eden orphan"
+license = "MIT"
+
+[profile.release]
+opt-level = 3
+lto = true

@@ -10,6 +10,7 @@ Generated from raw JSON. Workload families must be interpreted separately.
 | long-0e0p | GOLENG-HASH-ASYNC | 4 | 4 | 128.141199 | 83.851249 | 241.898553 |  |
 | long-0e0p | GOLENG-HASH-ST | 1 | 1 | 351.836315 | 351.836315 | 351.836315 |  |
 | long-0e0p | GOLENG-STREAM-ASYNC | 1 | 1 | 135.814975 | 135.814975 | 135.814975 |  |
+| long-0e0p | GOLLY-HASHLIFE | 3 | 3 | 206.917352 | 205.663238 | 462.856108 |  |
 | sanity-blinker | GOLLY-HASHLIFE | 1 | 1 | 0.014091 | 0.014091 | 0.014091 |  |
 | sanity-blinker | GOLLY-QUICKLIFE | 1 | 1 | 0.023945 | 0.023945 | 0.023945 |  |
 | sanity-block | GOLLY-HASHLIFE | 1 | 1 | 0.013508 | 0.013508 | 0.013508 |  |

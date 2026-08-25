@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0",
+  "run_id": "06c37a71-c380-42bf-b1cb-d9a59d7b150a",
+  "timestamp_utc": "2026-08-25T08:25:55.629414Z",
+  "engine_id": "GOLLY-HASHLIFE",
+  "engine_version": "5.0",
+  "engine_commit": null,
+  "algorithm": "HashLife",
+  "workload_id": "long-0e0p",
+  "input_sha256": "5e739002c2f1f527fdbdd88cf1b3a4b349b207c3f47d4d95482270a671aeb905",
+  "topology": "unbounded",
+  "generations": 4096,
+  "repetition": 1,
+  "cold_start": true,
+  "command": [
+    "D:\\Programs\\life-research\\golly\\golly-5.0-win-64bit\\bgolly.exe",
+    "-a",
+    "HashLife",
+    "-M",
+    "12000",
+    "-q",
+    "-m",
+    "4096",
+    "-o",
+    "D:\\Programs\\life-research\\datasets\\2026-08-25__GOLLY-HASHLIFE__long-0e0p__r1.mc.gz",
+    "D:\\Programs\\life-research\\src\\gol_engines\\res\\very_large_patterns\\0e0p-metaglider.mc.gz"
+  ],
+  "wall_seconds": 206.91735229999904,
+  "initialization_seconds": null,
+  "update_seconds": null,
+  "peak_rss_bytes": null,
+  "peak_vram_bytes": null,
+  "return_code": 0,
+  "host": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.5",
+    "cpu": "AMD64 Family 25 Model 97 Stepping 3, AuthenticAMD",
+    "gpu": null,
+    "ram_bytes": null,
+    "driver": null,
+    "compiler": null,
+    "build_flags": null
+  },
+  "output": {
+    "state_file": "D:\\Programs\\life-research\\datasets\\2026-08-25__GOLLY-HASHLIFE__long-0e0p__r1.mc.gz",
+    "sha256": "17aa1886cb00d9f291ca43f8cd5a57a805620a4126e02597f2be43796a17e554",
+    "stdout_sha256": "b2035782c672ed09ae88959f05b06cb082a5d7bd06942783808f6315dcba6ff7",
+    "stderr_sha256": "b74001d105434ec9d5087ba10bbc2cd818299bf8dc455dbc1b275c0d2898d587"
+  },
+  "logs": {
+    "stdout_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\2026-08-25__GOLLY-HASHLIFE__long-0e0p__r1.json.stdout.txt",
+    "stderr_file": "E:\\OneDrive\\Coding\\Conway-life\\benchmarks\\results\\2026-08-25__GOLLY-HASHLIFE__long-0e0p__r1.json.stderr.txt"
+  },
+  "notes": "official Golly 5.0 win-64bit bgolly, HashLife, -M 12000 MB; same pinned 0E0P input and 2^12 generations as the GOLENG runs of 2026-08-24; expected population 93_237_300 and canonical hash 0x02dda802a893049e (verified per rep via gol_engines_cli stats, see stdout appended by post-run tooling); single-threaded by design | state verified: gol_engines_cli stats on the saved .mc.gz reports canonical hash 0x02dda802a893049e and population 93_237_300, identical to all GOLENG 2^12 runs (see driver log golly-0e0p.out)"
+}
