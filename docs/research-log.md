@@ -145,6 +145,18 @@ Web audit 2026-08-25: Wade (June 2023) proved no height-4 orphans under the spec
 
 `tools/goe4_transfer --mode pairs` computes the greatest closed family of witness sets of size ≤ 2 (family F closed iff every W ∈ F has, for every letter, some W' ∈ F inside succ(W); nonempty F ⟹ universal). At d=0: 8.4M pairs shrink 443,155 → 296 → **0** in three rounds (~70 s). Combined with the empty σ-total core (k=1), this shows the height-4 no-orphan theorem cannot be witnessed by any strategy tracking ≤ 2 candidate runs — **the extension property genuinely requires ≥ 3-way lookahead**, which is why the naive antichain constructions blow up. k=3 is ~10¹⁰ triples and needs a different representation; parked.
 
+### Exact determinization: decisively infeasible (the experiment that closes the exact route)
+
+`tools/goe4_transfer --mode determinize` ran the plain deterministic subset construction from the full state set at d=0 with hash-deduplication and a 16M-subset (7.6 GiB) cap: **cap hit** after 1,418,344 subsets explored of 15.9M discovered, with the fresh-subset frontier only at word length 7 and a sustained discovery/exploration ratio of ~11. The reachable deterministic subset count at height 4 is therefore far beyond 16M (plausibly 10⁸–10⁹⁺), and the d=1 automaton (16× more states, 8 KiB per subset) is hopeless by explicit enumeration on any near-term hardware. Combined with the trivial simulation preorder, the empty k≤2 witness families, and the antichain blowups, every standard finite-automata technique is now measured dead on this automaton: **per-height unbounded-width universality needs a genuinely new idea, not more compute.** The practical frontier for LIFE-C001 stays width-bounded QBF plus theory.
+
 ### Symmetry breaking lands: ~6× on the dual QBF
 
-`goe4_qbf.py --symmetry` restricts the ∀-pattern space to lex-leaders under the strip-preserving symmetry group {column reversal, row flip, 180°} via fully biconditional lex chains (sound: orphan-hood is invariant; verified d=0 w=2/w=4 answers unchanged, w=4 time 32 s → 5.6 s). d=0 w=6 still exceeds 600 s — the per-width wall moves about one width outward. A long-budget symmetric sweep over the informative cells (d=2 w≤4, d=0 w=5, d=1 w=5–6, budgets up to 2 h each) is running detached; results to be appended next session.
+`goe4_qbf.py --symmetry` restricts the ∀-pattern space to lex-leaders under the strip-preserving symmetry group {column reversal, row flip, 180°} via fully biconditional lex chains (sound: orphan-hood is invariant; verified d=0 w=2/w=4 answers unchanged, w=4 time 32 s → 5.6 s). d=0 w=6 still exceeds 600 s — the per-width wall moves about one width outward. A long-budget symmetric sweep over the informative cells is running detached; landed so far: **d=2 (height 8) no orphan with width ≤ 3 (84 s) and ≤ 4 (169 s)** — a new height row for the open shape — and **d=0 w=5 TRUE (57 min)**, extending the Wade-consistent re-verification. d=1 w=5 and w=6 (2 h budgets each) still running; results to be appended.
+
+Current width table for the open shape (no orphan up to the stated width):
+
+| dead rows d | window height | verified width bound | note |
+|---|---|---|---|
+| 0 | 4 | any width | Wade 2023; QBF re-verified ≤ 5 |
+| 1 | 6 | ≤ 4 | w=5 running |
+| 2 | 8 | ≤ 4 | |

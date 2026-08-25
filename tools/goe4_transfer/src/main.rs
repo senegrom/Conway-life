@@ -44,6 +44,7 @@ struct Args {
     mode: String,
     max_depth: u32,
     report_every: u64,
+    max_subsets: usize,
 }
 
 fn parse_args() -> Args {
@@ -52,6 +53,7 @@ fn parse_args() -> Args {
         mode: "search".to_string(),
         max_depth: u32::MAX,
         report_every: 10,
+        max_subsets: 16_000_000,
     };
     let mut it = std::env::args().skip(1);
     while let Some(flag) = it.next() {
@@ -61,6 +63,7 @@ fn parse_args() -> Args {
             "--mode" => args.mode = value,
             "--max-depth" => args.max_depth = value.parse().unwrap(),
             "--report-every" => args.report_every = value.parse().unwrap(),
+            "--max-subsets" => args.max_subsets = value.parse().unwrap(),
             other => panic!("unknown flag {other}"),
         }
     }
@@ -259,6 +262,11 @@ fn main() {
         return;
     }
 
+    if args.mode == "determinize" {
+        run_determinize(&nfa, height, args.dead_rows, args.report_every, args.max_subsets);
+        return;
+    }
+
     // --mode search
     let (class, n_classes) = bisim_classes(&nfa, true);
     println!("bisimulation quotient: {} -> {} classes", nfa.n, n_classes);
@@ -347,6 +355,174 @@ fn main() {
          rows above and below exists, at any width. (antichain {}, explored {explored})",
         args.dead_rows,
         antichain.len()
+    );
+}
+
+/// Exact deterministic subset construction from the full state set, with
+/// hash-deduplication and a hard memory cap. Decides universality outright:
+/// the NFA is universal iff the empty subset is unreachable in the (finite)
+/// deterministic reachable part. BFS order, so a found empty subset yields a
+/// minimal-width orphan word. This is the "dumb method at full scale" — every
+/// clever reduction (simulation, antichains, small witnesses) has been shown
+/// to have no grip on this automaton.
+///
+/// Subsets are bitsets grouped by second column (M[b] = mask over a), stored
+/// in an arena; parent and letter per node reconstruct the word. Memory is
+/// arena-dominated: (ncols/64)*ncols*8 bytes per subset (512 B at d=0).
+fn run_determinize(nfa: &Nfa, height: u32, dead_rows: u32, report_every: u64, max_subsets: usize) {
+    let ncols: usize = 1 << (height + 2);
+    let blocks = ncols.div_ceil(64);
+    let words_per_subset = ncols * blocks;
+    let n = nfa.n;
+
+    // a_table[sigma][(b*ncols+c)*blocks..][..blocks]: mask over a.
+    let t0 = Instant::now();
+    let mut a_table: Vec<Vec<u64>> = vec![vec![0u64; n * blocks]; N_SIGMA];
+    for sigma in 0..N_SIGMA {
+        for s in 0..n {
+            // s = a*ncols + b ; successors are (b, c) for c in mask.
+            let (a, b) = (s / ncols, s % ncols);
+            for &t in &nfa.succ[sigma][s] {
+                let c = (t as usize) % ncols;
+                a_table[sigma][(b * ncols + c) * blocks + a / 64] |= 1u64 << (a % 64);
+            }
+        }
+    }
+    println!(
+        "determinize: {} bytes/subset, cap {} subsets (~{:.1} GiB arena), tables in {:.1}s",
+        words_per_subset * 8,
+        max_subsets,
+        (max_subsets as f64) * (words_per_subset as f64) * 8.0 / (1u64 << 30) as f64,
+        t0.elapsed().as_secs_f64()
+    );
+
+    let mut start = vec![u64::MAX; words_per_subset];
+    if ncols % 64 != 0 {
+        let mask = (1u64 << (ncols % 64)) - 1;
+        for b in 0..ncols {
+            start[b * blocks + blocks - 1] &= mask;
+        }
+    }
+
+    fn hash_words(words: &[u64]) -> u64 {
+        let mut h: u64 = 0xcbf2_9ce4_8422_2325;
+        for &w in words {
+            h ^= w;
+            h = h.wrapping_mul(0x1000_0000_01b3);
+        }
+        h
+    }
+
+    // Arena of subsets + BFS bookkeeping.
+    let mut arena: Vec<u64> = Vec::with_capacity(words_per_subset * 1024);
+    let mut parent: Vec<u32> = Vec::new();
+    let mut letter: Vec<u8> = Vec::new();
+    let mut depth_of: Vec<u16> = Vec::new();
+    let mut buckets: std::collections::HashMap<u64, Vec<u32>> = std::collections::HashMap::new();
+
+    fn subset_of(arena: &[u64], words: usize, id: usize) -> &[u64] {
+        &arena[id * words..(id + 1) * words]
+    }
+
+    arena.extend_from_slice(&start);
+    parent.push(u32::MAX);
+    letter.push(0);
+    depth_of.push(0);
+    buckets.entry(hash_words(&start)).or_default().push(0);
+
+    let mut head = 0usize; // BFS via arena order (append-only queue)
+    let mut successor = vec![0u64; words_per_subset];
+    let mut last_report = Instant::now();
+    let mut max_depth_seen = 0u16;
+    let mut capped = false;
+
+    'bfs: while head < parent.len() {
+        let id = head;
+        head += 1;
+        let depth = depth_of[id];
+        if last_report.elapsed().as_secs() >= report_every {
+            println!(
+                "explored {head}/{} subsets, depth {depth}, arena {:.2} GiB",
+                parent.len(),
+                (arena.len() * 8) as f64 / (1u64 << 30) as f64
+            );
+            last_report = Instant::now();
+        }
+        for sigma in 0..N_SIGMA {
+            successor.iter_mut().for_each(|w| *w = 0);
+            {
+                let m = subset_of(&arena, words_per_subset, id);
+                let table = &a_table[sigma];
+                for b in 0..ncols {
+                    let mb = &m[b * blocks..b * blocks + blocks];
+                    if mb.iter().all(|&w| w == 0) {
+                        continue;
+                    }
+                    let bbit_word = b / 64;
+                    let bbit = 1u64 << (b % 64);
+                    for c in 0..ncols {
+                        let t = &table[(b * ncols + c) * blocks..(b * ncols + c) * blocks + blocks];
+                        if mb.iter().zip(t).any(|(&x, &y)| x & y != 0) {
+                            successor[c * blocks + bbit_word] |= bbit;
+                        }
+                    }
+                }
+            }
+            if successor.iter().all(|&w| w == 0) {
+                // Empty subset: minimal-width orphan word found.
+                let mut word = vec![sigma as u8];
+                let mut cur = id;
+                while cur != 0 {
+                    word.push(letter[cur]);
+                    cur = parent[cur] as usize;
+                }
+                word.reverse();
+                report_orphan(&word, height, dead_rows);
+                std::process::exit(2);
+            }
+            let h = hash_words(&successor);
+            let bucket = buckets.entry(h).or_default();
+            let mut known = false;
+            for &bid in bucket.iter() {
+                if subset_of(&arena, words_per_subset, bid as usize) == successor.as_slice() {
+                    known = true;
+                    break;
+                }
+            }
+            if known {
+                continue;
+            }
+            if parent.len() >= max_subsets {
+                capped = true;
+                break 'bfs;
+            }
+            let new_id = parent.len() as u32;
+            bucket.push(new_id);
+            arena.extend_from_slice(&successor);
+            parent.push(id as u32);
+            letter.push(sigma as u8);
+            let nd = depth + 1;
+            depth_of.push(nd);
+            if nd > max_depth_seen {
+                max_depth_seen = nd;
+            }
+        }
+    }
+
+    if capped {
+        println!(
+            "CAP HIT: more than {max_subsets} reachable subsets at height {height} \
+             (dead rows {dead_rows}); explored {head}, deepest fresh subset at word length \
+             {max_depth_seen}. Exact determinization exceeds this memory budget."
+        );
+        std::process::exit(3);
+    }
+    println!(
+        "UNIVERSAL at height {height} (dead rows {dead_rows}), decided exactly: the \
+         deterministic reachable part has {} subsets (deepest fresh subset at word length \
+         {max_depth_seen}) and never reaches the empty set. No orphan with live cells in \
+         the middle four rows and {dead_rows} dead border rows exists at ANY width.",
+        parent.len()
     );
 }
 
