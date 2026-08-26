@@ -36,7 +36,7 @@ force):
 | dead rows d | window height | no orphan up to width |
 |---|---|---|
 | 0 | 4 | any width (Wade 2023); QBF re-verified w <= 5 |
-| 1 | 6 | 4 (w=5 open, >2h solver time) |
+| 1 | 6 | 5 (w=6 open, >2h solver time) |
 | 2 | 8 | 4 |
 
 These widths are small — the pattern spaces involved are tiny — so I

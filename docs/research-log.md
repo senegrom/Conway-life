@@ -151,12 +151,12 @@ Web audit 2026-08-25: Wade (June 2023) proved no height-4 orphans under the spec
 
 ### Symmetry breaking lands: ~6× on the dual QBF
 
-`goe4_qbf.py --symmetry` restricts the ∀-pattern space to lex-leaders under the strip-preserving symmetry group {column reversal, row flip, 180°} via fully biconditional lex chains (sound: orphan-hood is invariant; verified d=0 w=2/w=4 answers unchanged, w=4 time 32 s → 5.6 s). d=0 w=6 still exceeds 600 s — the per-width wall moves about one width outward. A long-budget symmetric sweep over the informative cells is running detached; landed so far: **d=2 (height 8) no orphan with width ≤ 3 (84 s) and ≤ 4 (169 s)** — a new height row for the open shape — and **d=0 w=5 TRUE (57 min)**, extending the Wade-consistent re-verification. d=1 w=5 and w=6 (2 h budgets each) still running; results to be appended.
+`goe4_qbf.py --symmetry` restricts the ∀-pattern space to lex-leaders under the strip-preserving symmetry group {column reversal, row flip, 180°} via fully biconditional lex chains (sound: orphan-hood is invariant; verified d=0 w=2/w=4 answers unchanged, w=4 time 32 s → 5.6 s). d=0 w=6 still exceeds 600 s — the per-width wall moves about one width outward. The long-budget symmetric sweep completed 2026-08-26: **d=2 (height 8) no orphan with width ≤ 4** (w=2/3/4 in 97/84/169 s) — a new height row — plus **d=0 w=5 TRUE (57 min)** and **d=1 (height 6) no orphan with width ≤ 5 (35.5 min)**; d=1 w=6 exceeded its 2 h budget (undecided). Overnight runs on the two frontier cells (d=1 w=6 at 8 h, d=2 w=5 at 4 h) launched detached at idle priority.
 
-Current width table for the open shape (no orphan up to the stated width):
+Width table for the open shape (no orphan up to the stated width):
 
-| dead rows d | window height | verified width bound | note |
+| dead rows d | window height | verified width bound | frontier |
 |---|---|---|---|
 | 0 | 4 | any width | Wade 2023; QBF re-verified ≤ 5 |
-| 1 | 6 | ≤ 4 | w=5 running |
-| 2 | 8 | ≤ 4 | |
+| 1 | 6 | ≤ 5 | w=6 > 2 h, overnight run |
+| 2 | 8 | ≤ 4 | w=5 overnight run |
