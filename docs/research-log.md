@@ -167,7 +167,7 @@ Pivot to Life facts proper: attack on Q28820954 (optimal padding thickness, Salo
 
 **The known-GoE zoo route: closed.** Every published Garden of Eden we could obtain — Banks 1971 (33×9, pop 226), the 1991 14×14, Flammenkamp/Beluchenko-era 13×12, 12×11, 11×11s, the 11×10 and 11×9 records, the 45-cell 11×11, and the five-row 45×5 — has **f(P) = 0**: the bare bounding-box pattern is already an orphan (`scripts/verify_goe_zoo.py`, reproducible with pinned provenance from conwaylife.appspot.com; patterns are third-party and fetched, not committed). Consequences: (a) the paper's "at least 1" bound cannot be witnessed by bounding-box patterns of known GoEs — f ≥ 1 examples must be constructed; (b) as a by-product, the preimage checker's UNSAT path is now validated end-to-end against **nine independent published orphans** (previously flagged as a validation gap).
 
-**Ongoing search.** f(P) = 1 witnesses are equivalently orphans with an all-dead outer ring and a preimageable interior. A D4-symmetric enumeration of 9×9 cores inside 11×11 dead-ringed windows (2^15 orbit representatives, UNSAT-first) is running; either outcome is a fact (a witness justifies/extends the lower bound concretely; emptiness is a clean bounded negative), and any find is auto-certified by the checker.
+**Witness search, first ring: empty.** f(P) = 1 witnesses are equivalently orphans with an all-dead outer ring and a preimageable interior. The D4-symmetric enumeration of all 32,767 nonempty 9×9 cores inside 11×11 dead-ringed windows completed with **zero finds** (96 min): no D4-symmetric 11×11 orphan with a dead border ring exists at all — a clean bounded negative. Next rings (C4 at 9×9, D4 at 11×11 cores, ~2M candidates each) require the incremental-SAT template (window values as assumption literals on one persistent solver) rather than per-candidate CNF builds.
 
 ### Symmetry breaking lands: ~6× on the dual QBF
 
@@ -178,5 +178,5 @@ Width table for the open shape (no orphan up to the stated width):
 | dead rows d | window height | verified width bound | frontier |
 |---|---|---|---|
 | 0 | 4 | any width | Wade 2023; QBF re-verified ≤ 5 |
-| 1 | 6 | ≤ 5 | w=6 > 2 h, overnight run |
-| 2 | 8 | ≤ 4 | w=5 overnight run |
+| 1 | 6 | ≤ 5 | w=6 running (8 h budget; a first 3 h attempt died to apparent solver OOM) |
+| 2 | 8 | ≤ 5 | w=6 next |
