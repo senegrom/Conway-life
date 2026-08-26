@@ -19,3 +19,7 @@ Generated from raw JSON. Workload families must be interpreted separately.
 | sanity-glider | GOLLY-QUICKLIFE | 1 | 1 | 0.021760 | 0.021760 | 0.021760 |  |
 | sparse-rpentomino | GOLLY-HASHLIFE | 3 | 3 | 0.017285 | 0.016944 | 0.018205 |  |
 | sparse-rpentomino | GOLLY-QUICKLIFE | 3 | 3 | 0.044509 | 0.042338 | 0.050545 |  |
+| stream-synthetic-001 | GOLENG-HASH-ASYNC | 1 | 1 | 28.166546 | 28.166546 | 28.166546 |  |
+| stream-synthetic-001 | GOLENG-STREAM-ASYNC | 1 | 1 | 21.680569 | 21.680569 | 21.680569 |  |
+| stream-synthetic-002-aperiodic | GOLENG-HASH-ASYNC | 3 | 3 | 31.215833 | 25.207854 | 33.374150 |  |
+| stream-synthetic-002-aperiodic | GOLENG-STREAM-ASYNC | 3 | 3 | 68.330556 | 20.174465 | 109.638508 |  |

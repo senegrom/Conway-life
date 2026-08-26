@@ -9,5 +9,6 @@ dense-4096-d50-s1,dense,generated bit grid,torus,4096x4096,10000,full-grid SHA-2
 dense-16384-d50-s1,dense,generated bit grid,torus,16384x16384,1000,full-grid SHA-256,Stress GPU and memory
 sparse-rpentomino,sparse-expanding,benchmarks/patterns/r-pentomino.rle,unbounded,,50000,coordinate digest and population,Checkpoint set required
 long-0e0p,long-compressible,external 0e0p-metaglider.mc.gz,unbounded,,2^14 and 2^27,macrocell digest and population,Reproduce gol_engines claims
-stream-synthetic-001,stream,generated antiparallel tapes,unbounded,,2^18,coordinate/macrocell digest,Controlled lane spacing
+stream-synthetic-001,stream,scripts/gen_stream_workload.py --lanes 16 --per-lane 64 --pitch 64 --spacing 32,unbounded,,2^18,canonical hash and exact population 5120,"periodic tape: correctness-grade only (HashLife-trivial too); RLE sha256 d40900677027f775b6008f24735af68403dd6d3a365ae407a5fb4c5d8432b38a; coord sha256 21dac0e85be12b1f9f7a18537bf2f6e9f21ea38a6d719a0b398585d1909651c6"
+stream-synthetic-002-aperiodic,stream,scripts/gen_stream_workload.py --lanes 32 --per-lane 256 --pitch 64 --jitter 64 --seed 42,unbounded,,2^18,canonical hash and exact population 40960,"seeded aperiodic gaps break HashLife subtree sharing; discriminating stream workload; RLE sha256 94ce0e34c2fefa50e813c50edda0479ab1020dfd679ab9deb9deb2197093cb60; coord sha256 96f8745d4a54956c889473fa16ec59e15c9e05d8b16c1dfce987a44b75ef8a37"
 soup-c1-16-batch,soup,generated C1 soups,finite seeds/unbounded evolution,16x16,fixed batch count,haul digest,Upload disabled during benchmark
