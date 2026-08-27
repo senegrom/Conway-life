@@ -172,8 +172,12 @@ Pivot to Life facts proper: attack on Q28820954 (optimal padding thickness, Salo
 **Second rings (incremental engine, six parallel workers).**
 
 - **C4 at 9×9: census complete and empty.** All 2,097,151 C4-symmetric 9×9 cores checked (~53 min wall across 3 workers): none has a dead-ringed 11×11 orphan padding. Combined with the D4-9×9 result: no rotationally symmetric 9×9-core dead-ringed orphan exists — consistent with the smallest known orphan bounding boxes (11×9 and up).
-- **D4 at 11×11: orphans exist — the first fully D4-symmetric orphans on record (pending literature audit).** Six found and independently verified (slow checker, bare and ringed both UNSAT) by the 27% mark, populations 60, 64, 72, 77, 80, 81 in 11×11. The **60-cell** specimen is only four cells above the all-time (asymmetric) smallest-orphan record of 56 while carrying the maximal square symmetry group — symmetry appears remarkably cheap for orphan-hood. All are orphans bare (f = 0 cores); **zero f = 1 witnesses so far**. Full census pending (~2 h); verified rasters accumulate in the harvest file and will be committed as first-party discoveries on completion.
-- Note: the incremental template's UNSAT path, unexercised in the all-SAT K=9 runs, is now live-fire validated — every find re-checked by the slow exhaustively-validated encoding.
+- **D4 at 11×11: census complete — 346 orphans, four padding witnesses, and a record-tying specimen** (`data/discoveries/d4-ring-orphans-11x11.txt`, all 346 re-verified by the slow checker, 0 mismatches):
+  - **Four explicit f(P) = 1 witnesses** (populations 84, 73, 69, 69): bare 11×11 core preimageable, dead-ringed 13×13 window an orphan. These are, to our knowledge, the first explicit patterns witnessing that the Salo–Törmä padding constant is ≥ 1 — the paper states the bound without an example. Each is a Garden of Eden whose bounding-box pattern alone does not reveal it.
+  - **A new 45-cell orphan with full D4 symmetry** — ties the smallest-known-orphan population (the zoo's 45-cell 11×11) and is NOT that pattern (verified distinct under all eight symmetries; the known one has no symmetry). Maximal symmetry at record population.
+  - 342 of 346 are orphans bare (f = 0 cores); population spectrum 45–85 with heavy concentration at 61–69.
+- Note: the incremental template's UNSAT path, unexercised in the all-SAT K=9 runs, is live-fire validated — every find re-checked by the slow exhaustively-validated encoding.
+- Next searches queued: the f = 2 design (two dead rings: pad² orphan ∧ pad¹ preimageable — an f ≥ 2 find would IMPROVE the open question's lower bound, which f = 1 witnesses only justify) and the single-flip neighborhood of the 346 (asymmetric variants; population reduction; more witnesses).
 
 ### Symmetry breaking lands: ~6× on the dual QBF
 
@@ -184,5 +188,5 @@ Width table for the open shape (no orphan up to the stated width):
 | dead rows d | window height | verified width bound | frontier |
 |---|---|---|---|
 | 0 | 4 | any width | Wade 2023; QBF re-verified ≤ 5 |
-| 1 | 6 | ≤ 5 | w=6 running (8 h budget; a first 3 h attempt died to apparent solver OOM) |
-| 2 | 8 | ≤ 5 | w=6 next |
+| 1 | 6 | ≤ 5 | w=6 undecided after a full 8 h budget — genuinely hard cell |
+| 2 | 8 | ≤ 5 | confirmed on retry (49 min); w=6 next |
