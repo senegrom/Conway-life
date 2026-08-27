@@ -37,9 +37,10 @@ class WindowTemplate:
     """Incremental preimage checker for an H x W window whose cells are
     assumption variables (ring cells may be fixed dead)."""
 
-    def __init__(self, height: int, width: int, dead_ring: bool, solver_name: str = "g3"):
+    def __init__(self, height: int, width: int, dead_ring, solver_name: str = "g3"):
         from pysat.solvers import Solver
 
+        ring = int(dead_ring)  # ring width in cells; bool True == 1
         self.h, self.w = height, width
         ph, pw = height + 2, width + 2
         next_var = 1
@@ -57,8 +58,8 @@ class WindowTemplate:
         clauses = []
         for i in range(height):
             for j in range(width):
-                on_ring = dead_ring and (
-                    i == 0 or j == 0 or i == height - 1 or j == width - 1
+                on_ring = (
+                    i < ring or j < ring or i >= height - ring or j >= width - ring
                 )
                 cell_vars = [self.x_var[(i + dr, j + dc)] for dr, dc in NEIGH]
                 v = self.w_var[(i, j)]
