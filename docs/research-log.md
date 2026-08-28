@@ -177,7 +177,8 @@ Pivot to Life facts proper: attack on Q28820954 (optimal padding thickness, Salo
   - **A new 45-cell orphan with full D4 symmetry** — ties the smallest-known-orphan population (the zoo's 45-cell 11×11) and is NOT that pattern (verified distinct under all eight symmetries; the known one has no symmetry). Maximal symmetry at record population.
   - 342 of 346 are orphans bare (f = 0 cores); population spectrum 45–85 with heavy concentration at 61–69.
 - Note: the incremental template's UNSAT path, unexercised in the all-SAT K=9 runs, is live-fire validated — every find re-checked by the slow exhaustively-validated encoding.
-- **f = 2 at D4 11×11: complete and empty** (3 workers, ~5 h each): no D4-symmetric 11×11 core has pad¹ preimageable and pad² an orphan. The padding-constant lower bound stays at 1 in this family; improvement needs other shapes (f=2 at C4 9×9 launched next — its census was entirely pad¹-preimageable, and 13×13 two-ring orphans are size-plausible).
+- **f = 2 at D4 11×11: complete and empty** (3 workers, ~5 h each): no D4-symmetric 11×11 core has pad¹ preimageable and pad² an orphan.
+- **f = 2 at C4 9×9: complete and empty** (32 min). With D4-9×9 (empty census) this exhausts every enumerable small symmetric family: **no f ≥ 2 witness exists among rotationally symmetric cores up to 11×11.** The padding-constant lower bound stays at 1; raising it needs C4 11×11 (2³¹ candidates, ~2 weeks at current rates), 13×13 D4 (2²⁸), asymmetric SAT-guided search, or theory. Parked pending a decision on compute scale.
 - **Single-flip neighborhood of the 346: complete** (41,866 candidates, 5.8 h): **60 additional verified f = 1 witnesses** (near-D4, populations 68–85; family now 64 total), 5,002 asymmetric dead-ringed orphans, minimum flip population 59 — the 45-cell specimen is a local minimum (no 44-cell orphan in its flip neighborhood).
 
 ### Symmetry breaking lands: ~6× on the dual QBF
