@@ -1,5 +1,12 @@
 # First-party discoveries
 
+## f1-witness.md
+
+Standalone explainer for the f = 1 padding witnesses: the pop-69
+witness and its explicit 13×13 preimage patch, the definitions, why the
+pair of facts pins the Salo–Törmä padding constant ≥ 1, and how to
+re-verify everything from `scripts/preimage_sat.py` alone.
+
 ## d4-ring-orphans-11x11.txt
 
 The complete census of fully D4-symmetric 11×11 patterns whose

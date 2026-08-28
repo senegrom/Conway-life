@@ -192,3 +192,14 @@ Width table for the open shape (no orphan up to the stated width):
 | 0 | 4 | any width | Wade 2023; QBF re-verified ≤ 5 |
 | 1 | 6 | ≤ 5 | w=6 undecided after a full 8 h budget — genuinely hard cell |
 | 2 | 8 | ≤ 5 | confirmed on retry (49 min); w=6 next |
+
+## 2026-08-28 — f ≥ 2 campaign launched; the f = 1 result written up
+
+**`data/discoveries/f1-witness.md`** — standalone explainer for the f = 1 result: the pop-69 witness W with an explicit 13×13 preimage patch for its bare window (SAT model, independently re-stepped), the dead-ring orphan fact, precise definitions, the open-question framing (c* ∈ [1,4], W pins the 1), and a two-command re-verification recipe using only `preimage_sat.py`. All four D4 witnesses re-verified fresh for the document (bare SAT + verified patch, pad¹ UNSAT, flip_point = 1: 4/4).
+
+**The f ≥ 2 hunt, resumed at the next rungs** (user green-light on compute scale). Two prongs, 12 detached Idle workers (launcher `D:\Programs\life-research\build\launch_f2_campaign.ps1`, outputs `f2deep13-w*.out` / `f2flips-*.out` alongside it; all workers affinity-pinned to cores 0–7 to leave four cores clear for an unrelated training job):
+
+- **`scripts/f2_deep_search.py`** — reversed-order deep search over symmetric cores: one incremental pad² check per candidate (SAT = common exit), so only rare pad²-orphans pay further checks, and the pad¹ census at the size falls out as a byproduct. Finds classified f = 0 / 1 / 2; f1/f2 finds always slow-verified, first f0s spot-verified. **Validated on D4 11×11 span [1499800, 1506232): reproduces exactly the 14 known census entries with correct classes (13 f0 + the pop-69 f1), zero f2, all spot checks pass.**
+- **Prong 1 — D4 13×13** (2²⁸ orbit-subsets, 8 workers in 2²⁵ chunks): simultaneously the first 13×13 ringed-orphan census, a new-f1-witness harvest, and the f ≥ 2 hunt. Dense-slice probe ~224/s/worker → roughly 2–3 days shared with the box's other load.
+- **Prong 2 — `scripts/f2_flips.py`**: pad² status of every single (~42k) and double (~2.5M) flip of the 346 census orphans — asymmetric territory adjacent to deep orphans, invisible to any symmetric census, and never pad²-checked before (the earlier single-flip sweep classified pad¹ only). Instances sit at the SAT/UNSAT boundary and are measurably harder: singles ~17/s, doubles ~148/s. 1+3 workers, ~2 h expected.
+- Rung choice: D4 13×13 costs ~8× less total solver work than C4 11×11 (2²⁸ × ~1.5 vs 2³¹) and opens a new size class; C4 11×11 stays queued behind it.
