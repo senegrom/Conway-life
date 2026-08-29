@@ -203,3 +203,12 @@ Width table for the open shape (no orphan up to the stated width):
 - **Prong 1 — D4 13×13** (2²⁸ orbit-subsets, 8 workers in 2²⁵ chunks): simultaneously the first 13×13 ringed-orphan census, a new-f1-witness harvest, and the f ≥ 2 hunt. Dense-slice probe ~224/s/worker → roughly 2–3 days shared with the box's other load.
 - **Prong 2 — `scripts/f2_flips.py`**: pad² status of every single (~42k) and double (~2.5M) flip of the 346 census orphans — asymmetric territory adjacent to deep orphans, invisible to any symmetric census, and never pad²-checked before (the earlier single-flip sweep classified pad¹ only). Instances sit at the SAT/UNSAT boundary and are measurably harder: singles ~17/s, doubles ~148/s. 1+3 workers, ~2 h expected.
 - Rung choice: D4 13×13 costs ~8× less total solver work than C4 11×11 (2²⁸ × ~1.5 vs 2³¹) and opens a new size class; C4 11×11 stays queued behind it.
+
+### 2026-08-28 (late) — flip prong complete: 1,080 new witnesses, still no f = 2; the 13×13 landscape is far richer
+
+- **Flip neighbourhoods DONE** — all 2,553,826 single+double flip variants of the 346-member census pad²-checked:
+  - depth 1 (41,866 variants): f0 = 5,002, f1 = 60, f2 = 0 — *exactly* reproduces the earlier single-flip sweep's totals through independent code (cross-validation), and adds the new fact: no f = 2 among singles.
+  - depth 2 (2,511,960 variants): f0 = 60,048 asymmetric double-flip ringed orphans, **f1 = 1,080 new witnesses** (first 60 slow-verified; the shared incremental template is validated by the exact depth-1 reproduction), **f2 = 0**. The f1-rich members cluster hard: the [115,230) member range alone held 764 of the 1,080.
+  - The witness family grows 64 → **1,144+** in one evening.
+- **Deep 13×13 at ~14%** (workers at 60–101/s under shared load): **21,831 D4 13×13 ringed orphans, 586 D4-symmetric f1 witnesses so far** — versus 346 and 4 in the entire 11×11 family: both phenomena scale up superlinearly with size. Every f1 slow-verified; **zero f2 candidates, zero mismatches**. Populations 65–121. Revised completion estimate ~3–4 days.
+- Session restart killed the watch task; re-armed with a tighter filter (F2/MISMATCH/DONE/stalls only — f1 finds are now routine events tracked by counts).

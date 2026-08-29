@@ -129,6 +129,16 @@ plus 60 near-D4 single-flip variants (populations 68–85) from the
 census's complete flip-neighbourhood sweep — 64 verified witnesses in
 all (see `docs/research-log.md`, 2026-08-26/27 entries).
 
+**Update, 2026-08-28:** the family is not small — it was only the first
+to be found. The complete double-flip sweep of the census (2.5M
+variants, every one pad²-checked) added **1,080 asymmetric witnesses**
+(spot re-verified; its checking template exactly reproduced all known
+single-flip totals), and the ongoing D4 13×13 deep census has already
+produced **hundreds of fully D4-symmetric witnesses at the larger size**
+(every one independently re-verified) with most of that space still to
+scan. f = 1 is a robust, abundant phenomenon; no f = 2 has appeared
+anywhere yet — the research log tracks the running campaign.
+
 ## Verify it yourself
 
 Only `scripts/preimage_sat.py` is needed (pysat; the encoding is
