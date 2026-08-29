@@ -212,3 +212,9 @@ Width table for the open shape (no orphan up to the stated width):
   - The witness family grows 64 → **1,144+** in one evening.
 - **Deep 13×13 at ~14%** (workers at 60–101/s under shared load): **21,831 D4 13×13 ringed orphans, 586 D4-symmetric f1 witnesses so far** — versus 346 and 4 in the entire 11×11 family: both phenomena scale up superlinearly with size. Every f1 slow-verified; **zero f2 candidates, zero mismatches**. Populations 65–121. Revised completion estimate ~3–4 days.
 - Session restart killed the watch task; re-armed with a tighter filter (F2/MISMATCH/DONE/stalls only — f1 finds are now routine events tracked by counts).
+
+### 2026-08-28 (later) — boundary attack: single flips of every known f = 1 witness
+
+- New `scripts/f2_witness_flips.py`. Rationale: f = 1 witnesses are pad¹-boundary-critical (bare SAT, one ring UNSAT), so their single-flip neighbourhoods are the most f=2-likely territory we know — and none of it is covered by prior sweeps: single flips of double-flip witnesses are *triple* flips of census members, and the 13×13 witnesses' neighbourhoods are untouched. The script harvests witnesses from campaign outputs (1,076 distinct 11×11 double-flip witnesses; a 648-witness 13×13 snapshot), re-checks each is genuinely f = 1, then per variant runs pad¹ first (UNSAT = cheap exit) and pad² for survivors, slow-verifying any candidate.
+- First boundary-geometry measurement: **~92% (11×11) / ~81% (13×13) of witness single-flips restore pad¹ SAT** — witness orphan-hood is single-cell fragile, exactly the regime where pad¹ and pad² could decouple into an f = 2.
+- 4 workers launched at idle/pinned (~130k + ~109k boundary variants, a few hours). The 13×13 pass is a snapshot; rerun after the deep campaign for late witnesses.
