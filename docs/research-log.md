@@ -223,3 +223,16 @@ Width table for the open shape (no orphan up to the stated width):
 
 - Per user request the census now uses only cores 0–1: 6 of 8 workers killed cleanly, each `.out` carrying a `DONE-PARTIAL` marker with its exact resume point; ~168M candidates queued in `build\f2deep13-queue.txt` (w3b…w8b). A detached Idle driver (`build\f2deep13-driver.ps1`, log `f2deep13-driver.log`) keeps exactly 2 workers running until the queue drains — survives session restarts. ETA at 2 cores ≈ 2.5 weeks; overlap re-checks at resume boundaries are harmless duplicates (harvests dedup by raster).
 - Boundary sweep (13×13 witness single-flips): ~95% complete (witnesses 308/324 and 296/324), f2 = 0 so far; per-instance cost ~100× the 11×11 sweep — the hardest SAT instances of the campaign.
+
+### 2026-08-30 — boundary prong complete: 232,217 witness perturbations, pad¹/pad² never decouple
+
+Single-flip sweep of every known f = 1 witness finished:
+
+| size | witnesses | variants | pad¹ restored SAT | f2 |
+|---|---|---|---|---|
+| 11×11 | 1,076 | 122,705 | 105,259 (85.8%) | **0** |
+| 13×13 | 648 | 109,512 | 94,453 (86.2%) | **0** |
+
+In 232,217 single-cell perturbations of pad¹-boundary-critical patterns, every variant whose pad¹ window regained a preimage also had a preimageable pad² window — **the two padding depths never once decoupled**, even at the sharpest known boundary. Combined with the exhaustive symmetric censuses and the 2.55M-variant census flip sweep (all f2 = 0), this is real evidence that either the Salo–Törmä constant is exactly 1, or f = 2 witnesses require structure qualitatively different from near-orphan perturbations. The 13×13 instances averaged ~2 s of solver time each (~12.6 h/worker) — near-boundary SAT is two orders harder than bulk census SAT.
+
+Remaining active prong: the 2-core driver-managed D4 13×13 deep census (~82% to go). Next design candidates if that stays empty: GPU-prefiltered census at C4 11×11 / D4 15×15, or double-flip witness neighbourhoods with a GPU front-end.
