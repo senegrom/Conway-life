@@ -5,7 +5,10 @@ this PC, splits them into chunks, and maps search_chunk over Modal CPU
 containers (1 core each). Results (finds, stats) are collected locally and
 written to D:/Programs/life-research/build/modal-ringext-<mode>.json.
 
-    modal run modal/f2_ring_extend_modal.py --mode f0 --chunks 300
+    modal run modal/f2_ring_extend_modal.py --mode w11 --chunks 60
+Containers are fat: CPUS cores each, one worker process per core, so each
+container does minutes of solid work instead of seconds (startup overhead and
+idle time were dominating the one-core layout).
 """
 
 from __future__ import annotations
@@ -28,32 +31,73 @@ image = (
 )
 
 
-@app.function(image=image, cpu=1.0, memory=2048, timeout=3 * 3600, max_containers=300)
-def search_chunk(chunk: dict) -> dict:
+CPUS = 8  # cores per container; one worker process per core
+
+
+def _merge(results: list[dict]) -> dict:
+    """Sum numeric fields, concatenate lists, across per-process results."""
+    out: dict = {}
+    for r in results:
+        for k, v in r.items():
+            if isinstance(v, (int, float)) and k not in ("start", "end", "chunk"):
+                out[k] = out.get(k, 0) + v
+            elif isinstance(v, list):
+                out.setdefault(k, []).extend(v)
+            else:
+                out[k] = v
+    return out
+
+
+def _split(items: list, parts: int) -> list[list]:
+    size = (len(items) + parts - 1) // parts
+    return [items[i * size:(i + 1) * size] for i in range(parts) if items[i * size:(i + 1) * size]]
+
+
+def _search_worker(args):
+    cores, k, rings, classify = args
     import sys
     sys.path.insert(0, "/root/scripts")
     from f2_ring_extend import search
     logs: list[str] = []
-    r = search(chunk["cores"], 0, len(chunk["cores"]), k=chunk["k"], quiet=True,
-               log=logs.append, rings=chunk.get("rings", 1), classify=chunk.get("classify", False))
-    r["chunk"] = chunk["id"]
+    r = search(cores, 0, len(cores), k=k, quiet=True, log=logs.append, rings=rings, classify=classify)
     r["log"] = logs
     return r
 
 
-@app.function(image=image, cpu=1.0, memory=2048, timeout=3 * 3600, max_containers=300)
-def flip_chunk(chunk: dict) -> dict:
+def _flip_worker(args):
+    rasters, k, gen2, sample_mod = args
     import sys
     sys.path.insert(0, "/root/scripts")
     from f2_flip_search import flip_search, gen2_attack
     logs: list[str] = []
-    if chunk.get("gen2"):
-        r = gen2_attack(chunk["rasters"], k=chunk["k"], sample_mod=chunk.get("sample_mod", 10),
-                        log=logs.append)
+    if gen2:
+        r = gen2_attack(rasters, k=k, sample_mod=sample_mod, log=logs.append)
     else:
-        r = flip_search(chunk["rasters"], k=chunk["k"], log=logs.append)
-    r["chunk"] = chunk["id"]
+        r = flip_search(rasters, k=k, log=logs.append)
     r["log"] = logs
+    return r
+
+
+@app.function(image=image, cpu=float(CPUS), memory=CPUS * 1536, timeout=6 * 3600, max_containers=60)
+def search_chunk(chunk: dict) -> dict:
+    """One fat container: the chunk's cores split over CPUS worker processes."""
+    from multiprocessing import Pool
+    parts = _split(chunk["cores"], CPUS)
+    with Pool(len(parts)) as pool:
+        results = pool.map(_search_worker, [(p, chunk["k"], chunk.get("rings", 1), chunk.get("classify", False)) for p in parts])
+    r = _merge(results)
+    r["chunk"] = chunk["id"]
+    return r
+
+
+@app.function(image=image, cpu=float(CPUS), memory=CPUS * 1536, timeout=6 * 3600, max_containers=60)
+def flip_chunk(chunk: dict) -> dict:
+    from multiprocessing import Pool
+    parts = _split(chunk["rasters"], CPUS)
+    with Pool(len(parts)) as pool:
+        results = pool.map(_flip_worker, [(p, chunk["k"], chunk.get("gen2", False), chunk.get("sample_mod", 10)) for p in parts])
+    r = _merge(results)
+    r["chunk"] = chunk["id"]
     return r
 
 
@@ -110,7 +154,7 @@ def harvest_local(k: int, mode: str) -> list[tuple[str, list[list[int]]]]:
 
 
 @app.local_entrypoint()
-def main(mode: str = "f0", chunks: int = 300, start: int = 0, end: int = -1, k: int = 13,
+def main(mode: str = "f0", chunks: int = 60, start: int = 0, end: int = -1, k: int = 13,
          rings: int = 1):
     if mode == "flip15":
         return flip_main(chunks, start, end)
