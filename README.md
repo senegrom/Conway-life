@@ -55,18 +55,24 @@ The route is SAT/SMT plus independently checkable certificates. A negative bound
 .
 ├── RESEARCH_REPORT.md
 ├── docs/
+│   ├── research-log.md          # dated narrative of every campaign
 │   ├── simulator-landscape.md
 │   ├── open-problems.md
 │   ├── benchmark-methodology.md
 │   ├── community-and-publication.md
 │   ├── research-roadmap.md
 │   ├── environment-windows-wsl2.md
-│   └── research-log.md
+│   └── drafts/                  # unpublished write-ups (forum post)
 ├── data/
+│   ├── discoveries/             # verified first-party results (see its README)
 │   ├── engine-registry.csv
 │   ├── open-problems.csv
 │   ├── sources.csv
 │   └── references.bib
+├── scripts/                     # searches, checkers and analysis (Python)
+├── modal/                       # cloud fan-out for the same searches (see its README)
+├── tools/                       # Rust helpers (four-row transfer automaton)
+├── adapters/                    # patches and harnesses for external engines
 ├── benchmarks/
 │   ├── README.md
 │   ├── workloads.csv
@@ -75,7 +81,6 @@ The route is SAT/SMT plus independently checkable certificates. A negative bound
 │   ├── patterns/
 │   └── results/
 ├── issues/
-├── scripts/
 ├── tests/
 └── .github/
 ```

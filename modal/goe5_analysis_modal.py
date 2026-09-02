@@ -68,16 +68,18 @@ def trajectory(rows: list[str]) -> dict:
 
 
 @app.function(image=image, cpu=8.0, memory=96 * 1024, timeout=12 * 3600)
-def antichain(height: int, depth: int, size_cap: int) -> dict:
-    """Depth-capped exact search over reachable sets with subset-minimality pruning."""
+def antichain(height: int, depth: int, size_cap: int, mirror: bool = False) -> dict:
+    """Depth-capped exact search over reachable sets with subset-minimality pruning.
+    mirror=True restricts pattern columns to vertically mirror-symmetric ones
+    (exact within that class; Eker's 45x5 orphan lies in it)."""
     import sys
     sys.path.insert(0, "/root/scripts")
     import numpy as np
-    from goe5_beam import build_valid, step
+    from goe5_beam import build_valid, step, mirror_letters
     h = height
     valid = build_valid(h)
     n = 1 << (h + 2)
-    letters = 1 << h
+    letter_list = mirror_letters(h) if mirror else list(range(1 << h))
     start = np.ones((n, n), dtype=bool)
     frontier = {start.tobytes(): (start, [])}
     log = []
@@ -85,7 +87,7 @@ def antichain(height: int, depth: int, size_cap: int) -> dict:
     for d in range(1, depth + 1):
         nxt = {}
         for key, (S, word) in frontier.items():
-            for L in range(letters):
+            for L in letter_list:
                 T = step(S, valid[L])
                 if not T.any():
                     return {"orphan_width": d, "word": word + [L], "log": log,
@@ -119,7 +121,7 @@ def antichain(height: int, depth: int, size_cap: int) -> dict:
 
 
 @app.local_entrypoint()
-def main(mode: str = "subwindows", height: int = 5, depth: int = 30, size_cap: int = 200000):
+def main(mode: str = "subwindows", height: int = 5, depth: int = 30, size_cap: int = 200000, mirror: int = 0):
     rows = [l.strip() for l in (BUILD / "eker5x45.txt").read_text().split("\n") if l.strip()]
     if mode == "subwindows":
         r = subwindows.remote(rows)
@@ -129,12 +131,12 @@ def main(mode: str = "subwindows", height: int = 5, depth: int = 30, size_cap: i
         r = trajectory.remote(rows)
         print("reachable-set sizes along the 45 columns:", r["sizes"], flush=True)
     elif mode == "antichain":
-        r = antichain.remote(height, depth, size_cap)
+        r = antichain.remote(height, depth, size_cap, bool(mirror))
         for line in r["log"]:
             print(line, flush=True)
         if r["orphan_width"]:
             print(f"*** NARROWEST ORPHAN height {height}: width {r['orphan_width']} word {r['word']}", flush=True)
         else:
             print(f"no orphan of height {height} up to depth {r['depth_reached']} ({r['stopped']}), {r['seconds']}s", flush=True)
-        (BUILD / f"modal-goe{height}-antichain.json").write_text(json.dumps(r, indent=1), encoding="utf-8")
+        (BUILD / f"modal-goe{height}-antichain{'-mirror' if mirror else ''}.json").write_text(json.dumps(r, indent=1), encoding="utf-8")
     print("DONE goe5 analysis", mode, flush=True)
