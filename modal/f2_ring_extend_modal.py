@@ -35,17 +35,20 @@ def search_chunk(chunk: dict) -> dict:
     from f2_ring_extend import search
     logs: list[str] = []
     r = search(chunk["cores"], 0, len(chunk["cores"]), k=chunk["k"], quiet=True,
-               log=logs.append)
+               log=logs.append, rings=chunk.get("rings", 1))
     r["chunk"] = chunk["id"]
     r["log"] = logs
     return r
 
 
 def harvest_local(k: int, mode: str) -> list[tuple[str, list[list[int]]]]:
-    """Same harvest as scripts/f2_ring_extend.harvest_cores, without importing
-    it locally (the local Modal venv has no pysat)."""
+    """Cores: mode f0/f1/all -> 13x13 census cores; mode w11 -> all known
+    11x11 f = 1 witnesses (4 D4 census + 60 single-flip + 1,076 double-flip)."""
     import sys
     sys.path.insert(0, str(SCRIPTS))
+    if mode == "w11":
+        from f2_two_ring_anchored import harvest_11
+        return harvest_11()
     from ring_orphan_search import cell_orbits
     orbits = cell_orbits(k, "d4")
     cores = {}
@@ -69,7 +72,10 @@ def harvest_local(k: int, mode: str) -> list[tuple[str, list[list[int]]]]:
 
 
 @app.local_entrypoint()
-def main(mode: str = "f0", chunks: int = 300, start: int = 0, end: int = -1, k: int = 13):
+def main(mode: str = "f0", chunks: int = 300, start: int = 0, end: int = -1, k: int = 13,
+         rings: int = 1):
+    if mode == "w11":
+        k, rings = 11, 2
     cores = harvest_local(k, mode)
     if end < 0 or end > len(cores):
         end = len(cores)
@@ -77,10 +83,11 @@ def main(mode: str = "f0", chunks: int = 300, start: int = 0, end: int = -1, k: 
     n = len(cores)
     chunks = max(1, min(chunks, n))
     size = (n + chunks - 1) // chunks
-    jobs = [{"id": i, "k": k, "cores": cores[i * size:(i + 1) * size]}
+    jobs = [{"id": i, "k": k, "rings": rings, "cores": cores[i * size:(i + 1) * size]}
             for i in range(chunks) if cores[i * size:(i + 1) * size]]
-    rings = 256
-    print(f"mode={mode}: {n} cores x {rings} rings = {n * rings} candidates in {len(jobs)} chunks "
+    from f2_ring_extend import ring_orbits
+    nrings = 1 << len(ring_orbits(k, rings))
+    print(f"mode={mode}: {n} cores x {nrings} ring configs = {n * nrings} candidates in {len(jobs)} chunks "
           f"(~{size} cores each)", flush=True)
     t0 = time.time()
     results = []

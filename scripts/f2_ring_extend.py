@@ -50,18 +50,20 @@ def harvest_cores(k: int) -> list[tuple[str, list[list[int]]]]:
     return [(f"{kind}:{bits}", r) for bits, (kind, r) in sorted(cores.items())]
 
 
-def ring_orbits(k: int):
-    """D4 orbits of the ring cells of a (k+2)x(k+2) square around a kxk core."""
-    n = k + 2
-    return [o for o in cell_orbits(n, "d4") if any(i in (0, n - 1) or j in (0, n - 1) for i, j in o)]
+def ring_orbits(k: int, rings: int = 1):
+    """D4 orbits of the cells of the `rings` outer rings of a (k+2*rings)-square
+    around a kxk core."""
+    n = k + 2 * rings
+    return [o for o in cell_orbits(n, "d4")
+            if any(min(i, j, n - 1 - i, n - 1 - j) < rings for i, j in o)]
 
 
 def search(cores, start: int, end: int, k: int = 13, report_every: float = 300.0,
-           log=print, quiet: bool = False) -> dict:
+           log=print, quiet: bool = False, rings: int = 1, max_rings: int | None = None) -> dict:
     """Ring-extension search over cores[start:end]. Returns stats and finds.
-    cores: list of (label, raster) with kxk rasters."""
-    n = k + 2
-    rorb = ring_orbits(k)
+    cores: list of (label, raster) with kxk rasters; `rings` outer D4 rings added."""
+    n = k + 2 * rings
+    rorb = ring_orbits(k, rings)
     ring1 = WindowTemplate(n + 2, n + 2, 1)
     ring2 = WindowTemplate(n + 4, n + 4, 2)
     cells = [(i, j) for i in range(n) for j in range(n)]
@@ -75,8 +77,8 @@ def search(cores, start: int, end: int, k: int = 13, report_every: float = 300.0
         base = [[0] * n for _ in range(n)]
         for i in range(k):
             for j in range(k):
-                base[i + 1][j + 1] = core[i][j]
-        for rbits in range(1 << len(rorb)):
+                base[i + rings][j + rings] = core[i][j]
+        for rbits in range(min(1 << len(rorb), max_rings or (1 << len(rorb)))):
             raster = [row[:] for row in base]
             for idx, o in enumerate(rorb):
                 if rbits >> idx & 1:
@@ -120,6 +122,7 @@ def main() -> int:
     ap.add_argument("--end", type=int)
     ap.add_argument("--only", choices=["f0", "f1", "all"], default="all")
     ap.add_argument("--report-every", type=float, default=300.0)
+    ap.add_argument("--rings", type=int, default=1)
     a = ap.parse_args()
     k = a.core
     cores = harvest_cores(k)
@@ -130,7 +133,7 @@ def main() -> int:
           f"{len(ring_orbits(k))} ring orbits -> {1 << len(ring_orbits(k))} rings each; "
           f"cores [{a.start},{end})", flush=True)
     log = lambda s: print(s, flush=True)
-    r = search(cores, a.start, end, k=k, report_every=a.report_every, log=log)
+    r = search(cores, a.start, end, k=k, report_every=a.report_every, log=log, rings=a.rings)
     print(f"DONE ringext {k} [{a.start},{end}): candidates {r['candidates']}, "
           f"pad1-SAT {r['pad1_sat']}, f2={r['f2']}, {r['seconds']:.0f}s", flush=True)
     return 0
