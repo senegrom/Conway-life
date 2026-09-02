@@ -56,23 +56,12 @@ def ring_orbits(k: int):
     return [o for o in cell_orbits(n, "d4") if any(i in (0, n - 1) or j in (0, n - 1) for i, j in o)]
 
 
-def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--core", type=int, default=13)
-    ap.add_argument("--start", type=int, default=0, help="core index")
-    ap.add_argument("--end", type=int)
-    ap.add_argument("--only", choices=["f0", "f1", "all"], default="all")
-    ap.add_argument("--report-every", type=float, default=300.0)
-    a = ap.parse_args()
-    k = a.core
-    cores = harvest_cores(k)
-    if a.only != "all":
-        cores = [c for c in cores if c[0].startswith(a.only)]
-    end = a.end if a.end is not None else len(cores)
+def search(cores, start: int, end: int, k: int = 13, report_every: float = 300.0,
+           log=print, quiet: bool = False) -> dict:
+    """Ring-extension search over cores[start:end]. Returns stats and finds.
+    cores: list of (label, raster) with kxk rasters."""
     n = k + 2
     rorb = ring_orbits(k)
-    print(f"ring-extension f2 search: {len(cores)} cores {k}x{k} ({a.only}), "
-          f"{len(rorb)} ring orbits -> {1 << len(rorb)} rings each; cores [{a.start},{end})", flush=True)
     ring1 = WindowTemplate(n + 2, n + 2, 1)
     ring2 = WindowTemplate(n + 4, n + 4, 2)
     cells = [(i, j) for i in range(n) for j in range(n)]
@@ -80,7 +69,8 @@ def main() -> int:
     r2v = {c: ring2.w_var[(c[0] + 2, c[1] + 2)] for c in cells}
     t0 = time.perf_counter(); last = t0
     checked = p1sat = f2 = 0
-    for ci in range(a.start, end):
+    finds, mismatches = [], []
+    for ci in range(start, end):
         label, core = cores[ci]
         base = [[0] * n for _ in range(n)]
         for i in range(k):
@@ -102,21 +92,47 @@ def main() -> int:
                 continue
             slow1, _ = ps.check_window(pad_window(raster, 1))
             slow2, _ = ps.check_window(pad_window(raster, 2))
+            rows = ["".join(map(str, row)) for row in raster]
             if slow1 and not slow2:
                 f2 += 1
-                print(f"*** F2-WITNESS (slow-verified) core={label} ring={rbits} "
-                      f"pop={sum(map(sum, raster))} — PADDING CONSTANT >= 2", flush=True)
+                finds.append({"core": label, "ring": rbits, "pop": sum(map(sum, raster)), "raster": rows})
+                log(f"*** F2-WITNESS (slow-verified) core={label} ring={rbits} "
+                    f"pop={sum(map(sum, raster))} — PADDING CONSTANT >= 2")
+                for r in rows:
+                    log(r)
             else:
-                print(f"MISMATCH f2-candidate core={label} ring={rbits}: slow pad1={slow1} pad2={slow2}", flush=True)
-            for row in raster:
-                print("".join(map(str, row)), flush=True)
+                mismatches.append({"core": label, "ring": rbits, "slow1": slow1, "slow2": slow2, "raster": rows})
+                log(f"MISMATCH f2-candidate core={label} ring={rbits}: slow pad1={slow1} pad2={slow2}")
         now = time.perf_counter()
-        if now - last > a.report_every:
-            print(f"  core {ci - a.start + 1}/{end - a.start}, {checked} candidates, "
-                  f"{checked / (now - t0):.0f}/s, pad1-SAT {p1sat}, f2 {f2}", flush=True)
+        if not quiet and now - last > report_every:
+            log(f"  core {ci - start + 1}/{end - start}, {checked} candidates, "
+                f"{checked / (now - t0):.0f}/s, pad1-SAT {p1sat}, f2 {f2}")
             last = now
-    print(f"DONE ringext {k} [{a.start},{end}): candidates {checked}, pad1-SAT {p1sat}, "
-          f"f2={f2}, {time.perf_counter() - t0:.0f}s", flush=True)
+    return {"start": start, "end": end, "candidates": checked, "pad1_sat": p1sat,
+            "f2": f2, "finds": finds, "mismatches": mismatches,
+            "seconds": round(time.perf_counter() - t0, 1)}
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--core", type=int, default=13)
+    ap.add_argument("--start", type=int, default=0, help="core index")
+    ap.add_argument("--end", type=int)
+    ap.add_argument("--only", choices=["f0", "f1", "all"], default="all")
+    ap.add_argument("--report-every", type=float, default=300.0)
+    a = ap.parse_args()
+    k = a.core
+    cores = harvest_cores(k)
+    if a.only != "all":
+        cores = [c for c in cores if c[0].startswith(a.only)]
+    end = a.end if a.end is not None else len(cores)
+    print(f"ring-extension f2 search: {len(cores)} cores {k}x{k} ({a.only}), "
+          f"{len(ring_orbits(k))} ring orbits -> {1 << len(ring_orbits(k))} rings each; "
+          f"cores [{a.start},{end})", flush=True)
+    log = lambda s: print(s, flush=True)
+    r = search(cores, a.start, end, k=k, report_every=a.report_every, log=log)
+    print(f"DONE ringext {k} [{a.start},{end}): candidates {r['candidates']}, "
+          f"pad1-SAT {r['pad1_sat']}, f2={r['f2']}, {r['seconds']:.0f}s", flush=True)
     return 0
 
 
