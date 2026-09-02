@@ -59,7 +59,8 @@ def ring_orbits(k: int, rings: int = 1):
 
 
 def search(cores, start: int, end: int, k: int = 13, report_every: float = 300.0,
-           log=print, quiet: bool = False, rings: int = 1, max_rings: int | None = None) -> dict:
+           log=print, quiet: bool = False, rings: int = 1, max_rings: int | None = None,
+           classify: bool = False) -> dict:
     """Ring-extension search over cores[start:end]. Returns stats and finds.
     cores: list of (label, raster) with kxk rasters; `rings` outer D4 rings added."""
     n = k + 2 * rings
@@ -69,9 +70,11 @@ def search(cores, start: int, end: int, k: int = 13, report_every: float = 300.0
     cells = [(i, j) for i in range(n) for j in range(n)]
     r1v = {c: ring1.w_var[(c[0] + 1, c[1] + 1)] for c in cells}
     r2v = {c: ring2.w_var[(c[0] + 2, c[1] + 2)] for c in cells}
+    bare = WindowTemplate(n, n, 0) if classify else None
+    bv = {c: bare.w_var[c] for c in cells} if classify else None
     t0 = time.perf_counter(); last = t0
-    checked = p1sat = f2 = 0
-    finds, mismatches = [], []
+    checked = p1sat = f2 = f0 = f1 = 0
+    finds, mismatches, witnesses = [], [], []
     for ci in range(start, end):
         label, core = cores[ci]
         base = [[0] * n for _ in range(n)]
@@ -87,6 +90,13 @@ def search(cores, start: int, end: int, k: int = 13, report_every: float = 300.0
             checked += 1
             a1 = [r1v[c] if raster[c[0]][c[1]] else -r1v[c] for c in cells]
             if not ring1.has_preimage(a1):
+                if classify:
+                    ab = [bv[c] if raster[c[0]][c[1]] else -bv[c] for c in cells]
+                    if bare.has_preimage(ab):
+                        f1 += 1
+                        witnesses.append((label, rbits))
+                    else:
+                        f0 += 1
                 continue
             p1sat += 1
             a2 = [r2v[c] if raster[c[0]][c[1]] else -r2v[c] for c in cells]
@@ -111,8 +121,8 @@ def search(cores, start: int, end: int, k: int = 13, report_every: float = 300.0
                 f"{checked / (now - t0):.0f}/s, pad1-SAT {p1sat}, f2 {f2}")
             last = now
     return {"start": start, "end": end, "candidates": checked, "pad1_sat": p1sat,
-            "f2": f2, "finds": finds, "mismatches": mismatches,
-            "seconds": round(time.perf_counter() - t0, 1)}
+            "f2": f2, "f1": f1, "f0": f0, "finds": finds, "mismatches": mismatches,
+            "witnesses": witnesses, "seconds": round(time.perf_counter() - t0, 1)}
 
 
 def main() -> int:

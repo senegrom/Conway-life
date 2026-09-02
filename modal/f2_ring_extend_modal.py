@@ -35,10 +35,44 @@ def search_chunk(chunk: dict) -> dict:
     from f2_ring_extend import search
     logs: list[str] = []
     r = search(chunk["cores"], 0, len(chunk["cores"]), k=chunk["k"], quiet=True,
-               log=logs.append, rings=chunk.get("rings", 1))
+               log=logs.append, rings=chunk.get("rings", 1), classify=chunk.get("classify", False))
     r["chunk"] = chunk["id"]
     r["log"] = logs
     return r
+
+
+@app.function(image=image, cpu=1.0, memory=2048, timeout=3 * 3600, max_containers=300)
+def flip_chunk(chunk: dict) -> dict:
+    import sys
+    sys.path.insert(0, "/root/scripts")
+    from f2_flip_search import flip_search
+    logs: list[str] = []
+    r = flip_search(chunk["rasters"], k=chunk["k"], log=logs.append)
+    r["chunk"] = chunk["id"]
+    r["log"] = logs
+    return r
+
+
+def ring_rasters(cores_by_label: dict, witnesses, k: int, rings: int):
+    """Reconstruct full rasters of (label, rbits) witnesses."""
+    import sys
+    sys.path.insert(0, str(SCRIPTS))
+    from f2_ring_extend import ring_orbits
+    rorb = ring_orbits(k, rings)
+    n = k + 2 * rings
+    out = []
+    for label, rbits in witnesses:
+        core = cores_by_label[label]
+        raster = [[0] * n for _ in range(n)]
+        for i in range(k):
+            for j in range(k):
+                raster[i + rings][j + rings] = core[i][j]
+        for idx, o in enumerate(rorb):
+            if rbits >> idx & 1:
+                for i, j in o:
+                    raster[i][j] = 1
+        out.append((f"{label}+ring{rbits}", raster))
+    return out
 
 
 def harvest_local(k: int, mode: str) -> list[tuple[str, list[list[int]]]]:
@@ -74,6 +108,11 @@ def harvest_local(k: int, mode: str) -> list[tuple[str, list[list[int]]]]:
 @app.local_entrypoint()
 def main(mode: str = "f0", chunks: int = 300, start: int = 0, end: int = -1, k: int = 13,
          rings: int = 1):
+    if mode == "flip15":
+        return flip_main(chunks, start, end)
+    classify = mode.endswith("c")
+    if classify:
+        mode = mode[:-1]
     if mode == "w11":
         k, rings = 11, 2
     cores = harvest_local(k, mode)
@@ -83,7 +122,8 @@ def main(mode: str = "f0", chunks: int = 300, start: int = 0, end: int = -1, k: 
     n = len(cores)
     chunks = max(1, min(chunks, n))
     size = (n + chunks - 1) // chunks
-    jobs = [{"id": i, "k": k, "rings": rings, "cores": cores[i * size:(i + 1) * size]}
+    jobs = [{"id": i, "k": k, "rings": rings, "classify": classify,
+             "cores": cores[i * size:(i + 1) * size]}
             for i in range(chunks) if cores[i * size:(i + 1) * size]]
     from f2_ring_extend import ring_orbits
     nrings = 1 << len(ring_orbits(k, rings))
@@ -100,6 +140,13 @@ def main(mode: str = "f0", chunks: int = 300, start: int = 0, end: int = -1, k: 
         if len(results) % 20 == 0 or r["f2"]:
             print(f"  {len(results)}/{len(jobs)} chunks, {tot_c} candidates, pad1-SAT {tot_p}, "
                   f"f2 {tot_f2}, {time.time() - t0:.0f}s", flush=True)
+    if classify:
+        wl = [w for r in results for w in r["witnesses"]]
+        f0 = sum(r["f0"] for r in results); f1 = sum(r["f1"] for r in results)
+        wf = BUILD / f"witnesses{k + 2 * rings}-{mode}.json"
+        wf.write_text(json.dumps({"k": k, "rings": rings, "f0": f0, "f1": f1,
+                                  "witnesses": wl}), encoding="utf-8")
+        print(f"classified: f0 (bare orphans) {f0}, f1 (witnesses) {f1} -> {wf}", flush=True)
     out = BUILD / f"modal-ringext-{mode}-{start}-{end}.json"
     out.write_text(json.dumps({"mode": mode, "k": k, "start": start, "end": end,
                                "candidates": tot_c, "pad1_sat": tot_p, "f2": tot_f2,
@@ -109,3 +156,37 @@ def main(mode: str = "f0", chunks: int = 300, start: int = 0, end: int = -1, k: 
                               indent=1), encoding="utf-8")
     print(f"DONE modal ringext {mode} [{start},{end}): candidates {tot_c}, pad1-SAT {tot_p}, "
           f"f2={tot_f2}, {time.time() - t0:.0f}s -> {out}", flush=True)
+
+
+def flip_main(chunks: int, start: int, end: int):
+    """Single-flip boundary attack on the 15x15 witnesses produced by mode w11c."""
+    wf = BUILD / "witnesses15-w11.json"
+    data = json.loads(wf.read_text(encoding="utf-8"))
+    k, rings = data["k"], data["rings"]
+    cores_by_label = dict(harvest_local(k, "w11"))
+    rasters = ring_rasters(cores_by_label, [tuple(w) for w in data["witnesses"]], k, rings)
+    if end < 0 or end > len(rasters):
+        end = len(rasters)
+    rasters = rasters[start:end]
+    n = len(rasters)
+    chunks = max(1, min(chunks, n))
+    size = (n + chunks - 1) // chunks
+    jobs = [{"id": i, "k": k + 2 * rings, "rasters": rasters[i * size:(i + 1) * size]}
+            for i in range(chunks) if rasters[i * size:(i + 1) * size]]
+    print(f"flip15: {n} witnesses x {(k + 2 * rings) ** 2} flips in {len(jobs)} chunks", flush=True)
+    t0 = time.time()
+    results = []
+    tot = {"variants": 0, "pad1_sat": 0, "f1": 0, "f2": 0}
+    for r in flip_chunk.map(jobs, order_outputs=False):
+        results.append(r)
+        for key in tot:
+            tot[key] += r[key]
+        for line in r["log"]:
+            print(line, flush=True)
+        if len(results) % 20 == 0 or r["f2"]:
+            print(f"  {len(results)}/{len(jobs)} chunks, {tot}, {time.time() - t0:.0f}s", flush=True)
+    out = BUILD / f"modal-flip15-{start}-{end}.json"
+    out.write_text(json.dumps({"totals": tot, "finds": [f for r in results for f in r["finds"]],
+                               "mismatches": [m for r in results for m in r["mismatches"]]}, indent=1),
+                   encoding="utf-8")
+    print(f"DONE modal flip15 [{start},{end}): {tot}, {time.time() - t0:.0f}s -> {out}", flush=True)
