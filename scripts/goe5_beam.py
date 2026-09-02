@@ -137,3 +137,53 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+def good_set(valid: np.ndarray, suffix: list[int]) -> np.ndarray:
+    """States (c1, c2) from which the column word `suffix` has a run.
+    Backward: good_i[c1,c2] = OR_c3 (valid[L_i][c1,c2,c3] & good_{i+1}[c2,c3])."""
+    n = valid.shape[1]
+    good = np.ones((n, n), dtype=bool)
+    for L in reversed(suffix):
+        good = (valid[L] & good[None, :, :]).any(axis=2)
+    return good
+
+
+def beam_prefix(h: int, valid: np.ndarray, suffix: list[int], beam: int, max_prefix: int,
+                rng: random.Random, log=print, noise: float = 0.0, letters_allowed=None):
+    """Shortest prefix (by beam search) whose reachable set is disjoint from the
+    states that can complete `suffix`; prefix + suffix is then an orphan."""
+    n = 1 << (h + 2)
+    letters = letters_allowed if letters_allowed is not None else list(range(1 << h))
+    good = good_set(valid, suffix)
+    start = np.ones((n, n), dtype=bool)
+    if not (start & good).any():
+        return []
+    frontier = [(int((start & good).sum()), [], start)]
+    for w in range(1, max_prefix + 1):
+        cand = []
+        seen = set()
+        for _, word, S in frontier:
+            for L in letters:
+                T = step(S, valid[L])
+                bad = int((T & good).sum())
+                if bad == 0:
+                    return word + [L]
+                key = T.tobytes()
+                if key in seen:
+                    continue
+                seen.add(key)
+                score = bad * (1.0 + noise * rng.random()) if noise else bad
+                cand.append((score, word + [L], T))
+        cand.sort(key=lambda t: t[0])
+        frontier = cand[:beam]
+        log(f"  prefix {w}: fewest suffix-completable states {frontier[0][0]:.0f}, {len(cand)} candidates")
+    return None
+
+
+def mirror_letters(h: int) -> list[int]:
+    out = []
+    for L in range(1 << h):
+        if all(((L >> i) & 1) == ((L >> (h - 1 - i)) & 1) for i in range(h)):
+            out.append(L)
+    return out
