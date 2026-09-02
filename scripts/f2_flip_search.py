@@ -80,13 +80,16 @@ def flip_search(rasters, k: int, log=print) -> dict:
             "seconds": round(time.perf_counter() - t0, 1)}
 
 
-def gen2_attack(rasters, k: int, sample_mod: int = 10, log=print) -> dict:
+def gen2_attack(rasters, k: int, sample_mod: int = 10, log=print, residues=(0,)) -> dict:
     """Second-generation boundary attack. For each (label, raster) f = 1
     witness: enumerate its single-flip variants, classify those that are
     themselves f = 1 witnesses (pad^1 UNSAT, bare SAT) = generation 2, keep a
     deterministic 1/sample_mod sample by raster hash, and run the single-flip
-    attack on each sampled gen-2 witness. Returns totals, finds, and the full
-    gen-2 identifier list (parent label, i, j) for reproducibility."""
+    attack on each sampled gen-2 witness. `residues` selects which hash
+    residues (mod sample_mod) are attacked: (0,) = the 10% sample, (1..9) =
+    the remaining 90%, all residues = 100%. Returns totals, finds, and the
+    full gen-2 identifier list (parent label, i, j) for reproducibility."""
+    residues = set(residues)
     import hashlib
 
     ring1 = WindowTemplate(k + 2, k + 2, 1)
@@ -152,7 +155,7 @@ def gen2_attack(rasters, k: int, sample_mod: int = 10, log=print) -> dict:
             variant = [row[:] for row in raster]
             variant[i][j] ^= 1
             h = hashlib.blake2b("".join("".join(map(str, r)) for r in variant).encode(), digest_size=8).digest()
-            if int.from_bytes(h, "big") % sample_mod != 0:
+            if int.from_bytes(h, "big") % sample_mod not in residues:
                 continue
             sampled += 1
             attack(f"{label}^{i},{j}", variant)

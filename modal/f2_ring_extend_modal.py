@@ -65,13 +65,13 @@ def _search_worker(args):
 
 
 def _flip_worker(args):
-    rasters, k, gen2, sample_mod = args
+    rasters, k, gen2, sample_mod, residues = args
     import sys
     sys.path.insert(0, "/root/scripts")
     from f2_flip_search import flip_search, gen2_attack
     logs: list[str] = []
     if gen2:
-        r = gen2_attack(rasters, k=k, sample_mod=sample_mod, log=logs.append)
+        r = gen2_attack(rasters, k=k, sample_mod=sample_mod, log=logs.append, residues=residues)
     else:
         r = flip_search(rasters, k=k, log=logs.append)
     r["log"] = logs
@@ -90,12 +90,13 @@ def search_chunk(chunk: dict) -> dict:
     return r
 
 
-@app.function(image=image, cpu=float(CPUS), memory=CPUS * 1536, timeout=6 * 3600, max_containers=60)
+@app.function(image=image, cpu=float(CPUS), memory=CPUS * 1536, timeout=6 * 3600, max_containers=120)
 def flip_chunk(chunk: dict) -> dict:
     from multiprocessing import Pool
     parts = _split(chunk["rasters"], CPUS)
     with Pool(len(parts)) as pool:
-        results = pool.map(_flip_worker, [(p, chunk["k"], chunk.get("gen2", False), chunk.get("sample_mod", 10)) for p in parts])
+        results = pool.map(_flip_worker, [(p, chunk["k"], chunk.get("gen2", False), chunk.get("sample_mod", 10),
+                                           tuple(chunk.get("residues", (0,)))) for p in parts])
     r = _merge(results)
     r["chunk"] = chunk["id"]
     return r
@@ -158,6 +159,8 @@ def main(mode: str = "f0", chunks: int = 60, start: int = 0, end: int = -1, k: i
          rings: int = 1):
     if mode == "flip15":
         return flip_main(chunks, start, end)
+    if mode == "gen2rest":   # the 90% not covered by the gen210 sample (hash residues 1..9)
+        return flip_main(chunks, start, end, gen2=True, sample_mod=10, residues=tuple(range(1, 10)))
     if mode.startswith("gen2"):
         return flip_main(chunks, start, end, gen2=True, sample_mod=int(mode[4:] or 10))
     classify = mode.endswith("c")
@@ -208,7 +211,8 @@ def main(mode: str = "f0", chunks: int = 60, start: int = 0, end: int = -1, k: i
           f"f2={tot_f2}, {time.time() - t0:.0f}s -> {out}", flush=True)
 
 
-def flip_main(chunks: int, start: int, end: int, gen2: bool = False, sample_mod: int = 10):
+def flip_main(chunks: int, start: int, end: int, gen2: bool = False, sample_mod: int = 10,
+              residues=(0,)):
     """Single-flip boundary attack on the 15x15 witnesses produced by mode w11c;
     with gen2=True, the second-generation attack on a 1/sample_mod sample of
     their f = 1 single-flip variants (mode gen2<N>, e.g. gen210 = 10%)."""
@@ -224,9 +228,9 @@ def flip_main(chunks: int, start: int, end: int, gen2: bool = False, sample_mod:
     chunks = max(1, min(chunks, n))
     size = (n + chunks - 1) // chunks
     jobs = [{"id": i, "k": k + 2 * rings, "rasters": rasters[i * size:(i + 1) * size],
-             "gen2": gen2, "sample_mod": sample_mod}
+             "gen2": gen2, "sample_mod": sample_mod, "residues": list(residues)}
             for i in range(chunks) if rasters[i * size:(i + 1) * size]]
-    tag = f"gen2 (1/{sample_mod} sample)" if gen2 else "flip15"
+    tag = f"gen2 (residues {sorted(residues)} mod {sample_mod})" if gen2 else "flip15"
     print(f"{tag}: {n} parent witnesses x {(k + 2 * rings) ** 2} flips in {len(jobs)} chunks", flush=True)
     t0 = time.time()
     results = []
@@ -240,7 +244,7 @@ def flip_main(chunks: int, start: int, end: int, gen2: bool = False, sample_mod:
             print(line, flush=True)
         if len(results) % 20 == 0 or r["f2"]:
             print(f"  {len(results)}/{len(jobs)} chunks, {tot}, {time.time() - t0:.0f}s", flush=True)
-    name = f"gen2-{sample_mod}" if gen2 else "flip15"
+    name = (f"gen2-{sample_mod}" + ("" if tuple(residues) == (0,) else "-r" + "".join(map(str, sorted(residues))))) if gen2 else "flip15"
     out = BUILD / f"modal-{name}-{start}-{end}.json"
     payload = {"totals": tot, "finds": [f for r in results for f in r["finds"]],
                "mismatches": [m for r in results for m in r["mismatches"]]}
