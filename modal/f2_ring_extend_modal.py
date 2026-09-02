@@ -45,9 +45,13 @@ def search_chunk(chunk: dict) -> dict:
 def flip_chunk(chunk: dict) -> dict:
     import sys
     sys.path.insert(0, "/root/scripts")
-    from f2_flip_search import flip_search
+    from f2_flip_search import flip_search, gen2_attack
     logs: list[str] = []
-    r = flip_search(chunk["rasters"], k=chunk["k"], log=logs.append)
+    if chunk.get("gen2"):
+        r = gen2_attack(chunk["rasters"], k=chunk["k"], sample_mod=chunk.get("sample_mod", 10),
+                        log=logs.append)
+    else:
+        r = flip_search(chunk["rasters"], k=chunk["k"], log=logs.append)
     r["chunk"] = chunk["id"]
     r["log"] = logs
     return r
@@ -110,6 +114,8 @@ def main(mode: str = "f0", chunks: int = 300, start: int = 0, end: int = -1, k: 
          rings: int = 1):
     if mode == "flip15":
         return flip_main(chunks, start, end)
+    if mode.startswith("gen2"):
+        return flip_main(chunks, start, end, gen2=True, sample_mod=int(mode[4:] or 10))
     classify = mode.endswith("c")
     if classify:
         mode = mode[:-1]
@@ -158,8 +164,10 @@ def main(mode: str = "f0", chunks: int = 300, start: int = 0, end: int = -1, k: 
           f"f2={tot_f2}, {time.time() - t0:.0f}s -> {out}", flush=True)
 
 
-def flip_main(chunks: int, start: int, end: int):
-    """Single-flip boundary attack on the 15x15 witnesses produced by mode w11c."""
+def flip_main(chunks: int, start: int, end: int, gen2: bool = False, sample_mod: int = 10):
+    """Single-flip boundary attack on the 15x15 witnesses produced by mode w11c;
+    with gen2=True, the second-generation attack on a 1/sample_mod sample of
+    their f = 1 single-flip variants (mode gen2<N>, e.g. gen210 = 10%)."""
     wf = BUILD / "witnesses15-w11.json"
     data = json.loads(wf.read_text(encoding="utf-8"))
     k, rings = data["k"], data["rings"]
@@ -171,12 +179,15 @@ def flip_main(chunks: int, start: int, end: int):
     n = len(rasters)
     chunks = max(1, min(chunks, n))
     size = (n + chunks - 1) // chunks
-    jobs = [{"id": i, "k": k + 2 * rings, "rasters": rasters[i * size:(i + 1) * size]}
+    jobs = [{"id": i, "k": k + 2 * rings, "rasters": rasters[i * size:(i + 1) * size],
+             "gen2": gen2, "sample_mod": sample_mod}
             for i in range(chunks) if rasters[i * size:(i + 1) * size]]
-    print(f"flip15: {n} witnesses x {(k + 2 * rings) ** 2} flips in {len(jobs)} chunks", flush=True)
+    tag = f"gen2 (1/{sample_mod} sample)" if gen2 else "flip15"
+    print(f"{tag}: {n} parent witnesses x {(k + 2 * rings) ** 2} flips in {len(jobs)} chunks", flush=True)
     t0 = time.time()
     results = []
-    tot = {"variants": 0, "pad1_sat": 0, "f1": 0, "f2": 0}
+    tot = ({"gen2": 0, "sampled": 0, "variants": 0, "pad1_sat": 0, "f2": 0} if gen2
+           else {"variants": 0, "pad1_sat": 0, "f1": 0, "f2": 0})
     for r in flip_chunk.map(jobs, order_outputs=False):
         results.append(r)
         for key in tot:
@@ -185,8 +196,11 @@ def flip_main(chunks: int, start: int, end: int):
             print(line, flush=True)
         if len(results) % 20 == 0 or r["f2"]:
             print(f"  {len(results)}/{len(jobs)} chunks, {tot}, {time.time() - t0:.0f}s", flush=True)
-    out = BUILD / f"modal-flip15-{start}-{end}.json"
-    out.write_text(json.dumps({"totals": tot, "finds": [f for r in results for f in r["finds"]],
-                               "mismatches": [m for r in results for m in r["mismatches"]]}, indent=1),
-                   encoding="utf-8")
-    print(f"DONE modal flip15 [{start},{end}): {tot}, {time.time() - t0:.0f}s -> {out}", flush=True)
+    name = f"gen2-{sample_mod}" if gen2 else "flip15"
+    out = BUILD / f"modal-{name}-{start}-{end}.json"
+    payload = {"totals": tot, "finds": [f for r in results for f in r["finds"]],
+               "mismatches": [m for r in results for m in r["mismatches"]]}
+    if gen2:
+        payload["gen2_ids"] = [g for r in results for g in r["gen2_ids"]]
+    out.write_text(json.dumps(payload), encoding="utf-8")
+    print(f"DONE modal {name} [{start},{end}): {tot}, {time.time() - t0:.0f}s -> {out}", flush=True)
