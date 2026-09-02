@@ -29,7 +29,7 @@ def run_beam(args: dict) -> dict:
     import sys
     sys.path.insert(0, "/root/scripts")
     import numpy as np
-    from goe5_beam import build_valid, beam_search, beam_prefix, good_set, mirror_letters, step, word_to_window
+    from goe5_beam import build_valid, beam_search, beam_prefix, beam_prefix_la, good_set, mirror_letters, step, word_to_window
     from preimage_sat import check_window
     h = args["height"]
     valid = build_valid(h)
@@ -39,8 +39,13 @@ def run_beam(args: dict) -> dict:
         suffix = args["suffix"]
         t0 = time.time()
         letters = mirror_letters(h) if args.get("mirror") else None
-        prefix = beam_prefix(h, valid, suffix, args["beam"], args["max_prefix"], rng, log=logs.append,
-                             noise=args.get("noise", 0.0), letters_allowed=letters)
+        if args.get("lookahead"):
+            prefix = beam_prefix_la(h, valid, suffix, args["beam"], args["max_prefix"], rng, log=logs.append,
+                                    noise=args.get("noise", 0.0), la_depth=args["lookahead"],
+                                    la_top=args.get("la_top", 200), la_from=args.get("la_from"))
+        else:
+            prefix = beam_prefix(h, valid, suffix, args["beam"], args["max_prefix"], rng, log=logs.append,
+                                 noise=args.get("noise", 0.0), letters_allowed=letters)
         out = {"seed": args["seed"], "suffix_len": len(suffix), "seconds": round(time.time() - t0),
                "log": logs, "orphan": None}
         if prefix is not None:
@@ -78,7 +83,8 @@ def run_beam(args: dict) -> dict:
 
 @app.local_entrypoint()
 def main(height: int = 5, beam: int = 300, seeds: int = 16, max_width: int = 46, noise: float = 0.15,
-         validate: int = 0, suffix_len: int = 0, mirror: int = 0):
+         validate: int = 0, suffix_len: int = 0, mirror: int = 0, lookahead: int = 0, la_top: int = 200,
+         la_from: int = -1):
     if validate:
         r = run_beam.remote({"height": height, "seed": 1, "validate": validate})
         print(f"validate height {height}: {r['validate']} windows, disagreements {r['bad']}", flush=True)
@@ -92,7 +98,9 @@ def main(height: int = 5, beam: int = 300, seeds: int = 16, max_width: int = 46,
         cols = [sum(raster[i][x] << i for i in range(height)) for x in range(w)]
         suffix = cols[w - suffix_len:]
         jobs = [{"height": height, "beam": beam, "max_prefix": max_width - suffix_len, "seed": s,
-                 "noise": (0.0 if s == 0 else noise), "suffix": suffix, "mirror": mirror} for s in range(seeds)]
+                 "noise": (0.0 if s == 0 else noise), "suffix": suffix, "mirror": mirror,
+                 "lookahead": lookahead, "la_top": la_top, "la_from": (None if la_from < 0 else la_from)}
+                for s in range(seeds)]
         print(f"prefix search against Eker's last {suffix_len} columns: beam {beam}, {seeds} seeds, "
               f"max prefix {max_width - suffix_len}, mirror-symmetric letters only: {bool(mirror)}", flush=True)
     else:
@@ -113,6 +121,6 @@ def main(height: int = 5, beam: int = 300, seeds: int = 16, max_width: int = 46,
                 best = o
         else:
             print(f"  seed {r['seed']}: no orphan up to width {max_width} ({r['seconds']}s); last: {r['log'][-1] if r['log'] else ''}", flush=True)
-    out = BUILD / f"modal-goe{height}-beam{beam}{'-suffix' + str(suffix_len) if suffix_len else ''}{'-mirror' if mirror else ''}.json"
+    out = BUILD / f"modal-goe{height}-beam{beam}{'-suffix' + str(suffix_len) if suffix_len else ''}{'-mirror' if mirror else ''}{'-la' + str(lookahead) if lookahead else ''}.json"
     out.write_text(json.dumps({"height": height, "beam": beam, "results": results}, indent=1), encoding="utf-8")
     print(f"DONE goe{height} beam: best width {best['width'] if best else None} -> {out}", flush=True)

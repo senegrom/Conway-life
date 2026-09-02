@@ -187,3 +187,72 @@ def mirror_letters(h: int) -> list[int]:
         if all(((L >> i) & 1) == ((L >> (h - 1 - i)) & 1) for i in range(h)):
             out.append(L)
     return out
+
+
+def step_all(S: np.ndarray, valid: np.ndarray) -> np.ndarray:
+    """Successor sets for every letter at once: shape (letters, n, n)."""
+    return (S[None, :, :, None] & valid).any(axis=1)
+
+
+def lookahead(S: np.ndarray, valid: np.ndarray, good: np.ndarray, depth: int):
+    """Exact search: a letter word of length <= depth from S whose reachable set
+    avoids `good` entirely (returns the word), else None."""
+    T = step_all(S, valid)
+    bad = (T & good[None]).sum(axis=(1, 2))
+    hits = np.nonzero(bad == 0)[0]
+    if len(hits):
+        return [int(hits[0])]
+    if depth <= 1:
+        return None
+    order = np.argsort(bad)
+    for L in order:
+        if not T[L].any():
+            return [int(L)]
+        sub = lookahead(T[L], valid, good, depth - 1)
+        if sub is not None:
+            return [int(L)] + sub
+    return None
+
+
+def beam_prefix_la(h: int, valid: np.ndarray, suffix: list[int], beam: int, max_prefix: int,
+                   rng: random.Random, log=print, noise: float = 0.0, la_depth: int = 2,
+                   la_top: int = 200, la_from: int | None = None):
+    """beam_prefix with an exact lookahead of `la_depth` columns applied to the
+    `la_top` best frontier sets at prefix widths >= la_from (default: the last
+    la_depth widths), so the final collapse is found exactly, not greedily."""
+    n = 1 << (h + 2)
+    letters = list(range(1 << h))
+    good = good_set(valid, suffix)
+    start = np.ones((n, n), dtype=bool)
+    frontier = [(int((start & good).sum()), [], start)]
+    if la_from is None:
+        la_from = max_prefix - la_depth
+    for w in range(1, max_prefix + 1):
+        cand = []
+        seen = set()
+        for _, word, S in frontier:
+            T = step_all(S, valid)
+            bads = (T & good[None]).sum(axis=(1, 2))
+            for L in letters:
+                bad = int(bads[L])
+                if bad == 0:
+                    return word + [L]
+                key = T[L].tobytes()
+                if key in seen:
+                    continue
+                seen.add(key)
+                score = bad * (1.0 + noise * rng.random()) if noise else bad
+                cand.append((score, word + [L], T[L]))
+        cand.sort(key=lambda t: t[0])
+        frontier = cand[:beam]
+        log(f"  prefix {w}: fewest suffix-completable states {frontier[0][0]:.0f}, {len(cand)} candidates")
+        if w >= la_from:
+            remaining = max_prefix - w
+            d = min(la_depth, remaining)
+            if d >= 1:
+                for _, word, S in frontier[:la_top]:
+                    ext = lookahead(S, valid, good, d)
+                    if ext is not None:
+                        return word + ext
+                log(f"    lookahead depth {d} on top {min(la_top, len(frontier))}: none")
+    return None
